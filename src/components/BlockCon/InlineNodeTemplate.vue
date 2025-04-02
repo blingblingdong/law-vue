@@ -1,0 +1,39 @@
+
+<template>
+    <template v-if="inlineNode.type === 'text'">
+      {{ inlineNode.text }}
+    </template>
+    <template v-else-if="inlineNode.type === 'span'">
+      <span :class="inlineNode.attributes?.class" :style="inlineNode.attributes?.style">
+        {{ inlineNode.text }}
+        <template v-if="inlineNode.children" v-for="(nested, idx) in inlineNode.children" :key="idx">
+          <InlineNodeTemplate :inline-node="nested" />
+        </template>
+      </span>
+    </template>
+    <template v-else-if="inlineNode.type === 'strong'">
+      <strong :class="inlineNode.attributes?.class" :style="inlineNode.attributes?.style">
+        {{ inlineNode.text }}
+        <template v-if="inlineNode.children" v-for="(nested, idx) in inlineNode.children" :key="idx">
+          <InlineNodeTemplate :inline-node="nested" />
+        </template>
+      </strong>
+    </template>
+    <template v-else-if="inlineNode.type === 'p'">
+      <p :class="inlineNode.attributes?.class" :style="inlineNode.attributes?.style">
+        {{ inlineNode.text }}
+        <template v-if="inlineNode.children" v-for="(nested, idx) in inlineNode.children" :key="idx">
+          <InlineNodeTemplate :inline-node="nested" />
+        </template>
+      </p>
+    </template>
+  </template>
+
+<script lang="ts" setup>
+import { defineProps } from 'vue'
+import type { Attributes, InlineNode, Block, Note } from '../../types/Note'
+
+const props = defineProps<{
+  inlineNode: InlineNode
+}>()
+</script>
