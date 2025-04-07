@@ -19,7 +19,21 @@ const FolderNow = ref<string>("")
 const inputFileName = ref<string>('')
 const showCreateFile = ref<boolean>(false);
 const showsidebar = ref<boolean>(true);
+const notShowNote = ref(true);
 
+const openSideBar = () => {
+  // 1.將筆記本頁關閉
+  notShowNote.value = true;
+  //2.將筆記導覽開啟
+  showsidebar.value = true;
+}
+
+const closeTheSideBar = () => {
+  // 1.將筆記本頁開啟
+  notShowNote.value = false;
+  //2.將筆記導覽關閉
+  showsidebar.value = false;
+}
 
 
 
@@ -36,6 +50,8 @@ const clickFolder = async (folder_name: string) => {
 const clickNote = async (notename: string) => {
   TheNote.value = await get_note(ApiLink, user.value, FolderNow.value, notename);
   TheNav.value = await get_note_nav(ApiLink, `${user.value}-${FolderNow.value}-${notename}`);
+  notShowNote.value = false;
+  showsidebar.value = false;
 }
 
 const createNote = async () => {
@@ -53,41 +69,37 @@ const createNote = async () => {
 
 <template>
   <div id="privateArea">
-    <i class="fa-solid fa-folder folderControll" v-show="showsidebar" @click="showsidebar = false"></i>
-    <i class="fa-solid fa-folder-open folderControll" v-show="!showsidebar" @click="showsidebar = true"></i>
+    <i class="fa-solid fa-folder folderControll" v-show="showsidebar" @click="closeTheSideBar"></i>
+    <i class="fa-solid fa-folder-open folderControll" v-show="!showsidebar" @click="openSideBar"></i>
 
-    <div id="privateFolder" v-show="showsidebar">
-      <ul id="privateFolderList" v-if="folderlist">
-        <p>資料夾 +</p>
-        <li class='privateFolderName' v-for="folder in folderlist">
-          <a @click.prevent="clickFolder(folder.directory)">{{ folder.directory }}</a>
-        </li>
-      </ul>
-    </div>
-    <div id="privateNote" v-show="showsidebar">
-      <ul id="privateNoteList" v-if="notelist">
-        <span>{{ FolderNow }}</span>
-        <li class='privateNoteName' v-for="note in notelist">
-          <a @click.prevent="clickNote(note)">{{ note }}</a>
-        </li>
-        <div id="crateFile" v-if="showCreateFile">
-          <input v-model="inputFileName"></input>
-          <button @click="createNote">create</button>
-          <button>cancel</button>
-        </div>
-        <li class="addNote">
-          <a @click.prevent="showCreateFile = true">新增文件</a>
-        </li>
-      </ul>
-      <div v-else>
-        <h3>No Note yet</h3>
+    <div id="privateFolderAndNote" v-show="showsidebar">
+      <div id="privateFolder">
+        <ul id="privateFolderList" v-if="folderlist">
+          <p>資料夾 +</p>
+          <li class='privateFolderName' v-for="folder in folderlist">
+            <a @click.prevent="clickFolder(folder.directory)">{{ folder.directory }}</a>
+          </li>
+        </ul>
+      </div>
+      <div id="privateNote">
+        <ul id="privateNoteList" v-if="notelist">
+          <span>{{ FolderNow }}</span>
+          <li class='privateNoteName' v-for="note in notelist">
+            <a @click.prevent="clickNote(note)">{{ note }}</a>
+          </li>
+          <div id="crateFile" v-if="showCreateFile">
+            <input v-model="inputFileName"></input>
+            <button @click="createNote">create</button>
+            <button>cancel</button>
+          </div>
+          <li class="addNote">
+            <a @click.prevent="showCreateFile = true">新增文件</a>
+          </li>
+        </ul>
       </div>
     </div>
-    <div id="privateFile" v-if="TheNote">
+    <div id="privateFile" v-if="TheNote" :class="{ notshowNote: notShowNote }">
       <FilePage :theNote="TheNote" :theNoteNav="TheNav" v-if="TheNote" />
-    </div>
-    <div v-else>
-      <h3>No note yet</h3>
     </div>
   </div>
 </template>
@@ -104,6 +116,11 @@ const createNote = async () => {
 li {
   list-style: none;
   padding: 5px 5px;
+}
+
+a:hover {
+  color: var(--primary-color);
+  cursor: pointer;
 }
 
 ul {
@@ -137,15 +154,11 @@ ul span {
   display: flex;
 }
 
-#privateFolder {
-  flex: 15%;
+#privateFolder,
+#privateFile {
   min-width: 100px;
 }
 
-#privateNote {
-  flex: 15%;
-  min-width: 100px;
-}
 
 #privateFile {
   flex: 70%;
@@ -155,8 +168,27 @@ ul span {
   margin: 10px;
 }
 
+#privateFolderAndNote {
+  display: flex;
+  gap: 5px;
+  flex: 30%;
+}
+
 .folderControll {
   top: 10%;
   position: fixed;
+}
+
+@media only screen and (max-width: 600px) {
+  .notshowNote {
+    display: none !important;
+  }
+
+  #privateFolderAndNote {
+    display: flex;
+    gap: 50px;
+    flex: 100%;
+  }
+
 }
 </style>

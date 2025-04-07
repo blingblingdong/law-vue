@@ -20,8 +20,9 @@
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   background-color: black;
+  font-family: "Playwrite DE Grund", cursive;
+
 }
 
 h1 {
@@ -265,4 +266,15 @@ h1 {
 
 .law-block-lines {
   list-style-type: upper-roman !important;
+}
+
+.ck-content blockquote {
+  all: unset;
+  /* 清除所有樣式 */
+  /* 或自行設計你想要的樣式 */
+}
+
+/* 如果有 RTL 也一起處理 */
+.ck-content[dir="rtl"] blockquote {
+  all: unset;
 }
