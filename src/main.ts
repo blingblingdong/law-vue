@@ -6,3 +6,6 @@ import { initApiUrl } from './utils/api'
 initApiUrl().then(() => {
   createApp(App).mount('#app')
 })
+
+
+

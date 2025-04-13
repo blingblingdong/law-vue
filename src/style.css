@@ -25,6 +25,12 @@ body {
 
 }
 
+input {
+  border: none;
+  outline: none;
+}
+
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
@@ -265,7 +271,7 @@ h1 {
 
 
 .law-block-lines {
-  list-style-type: upper-roman !important;
+  list-style-type: none !important;
 }
 
 .ck-content blockquote {
@@ -277,4 +283,29 @@ h1 {
 /* 如果有 RTL 也一起處理 */
 .ck-content[dir="rtl"] blockquote {
   all: unset;
+}
+
+.show-number::before {
+  counter-increment: num;
+  content: counter(num);
+  display: inline-block;
+  position: absolute;
+  left: -3em;
+  margin-left: -1em;
+  text-align: right;
+  width: 3em;
+  font-family: Consolas;
+  font-size: 1.05em;
+  font-style: italic;
+  color: #666;
+}
+
+.law-block-line {
+  margin-left: 1em;
+  text-indent: -0em;
+}
+
+.law-indent {
+  margin-left: 3em;
+  text-indent: -2em;
 }

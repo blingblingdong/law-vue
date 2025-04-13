@@ -9,7 +9,6 @@ import { get_all_lawList, getChapterList, load_chapter_datalist } from '../types
 
 const realchapter = ref('');
 const chapterlist = ref<null | ChapterUl[]>(null);
-const lawlist = ref<null | LawList[]>(null);
 
 import { getApiUrl } from '../utils/api.ts'
 
@@ -35,11 +34,12 @@ const HandlePage = function (pageObj: PageListType) {
   NowPage.value = pageObj.page;
 }
 
+const data = ref<null | LawList[]>(null);
 
 const send = async (event: Event) => {
   event.preventDefault();
   realchapter.value = inputChapter.value;
-  lawlist.value = await get_all_lawList(realchapter.value, ApiLink);
+  data.value = await get_all_lawList(realchapter.value, ApiLink);
   chapterlist.value = await getChapterList(realchapter.value, ApiLink);
   chapterOption.value = await load_chapter_datalist(realchapter.value, ApiLink);
 }
@@ -52,17 +52,16 @@ const send = async (event: Event) => {
     <div id="law-search-area">
       <form id="law-search-area-form">
         <input list="law-name-data" id="search-chapter" v-model="inputChapter">
-        <button type="submit" @click="send">查尋</button>
-        <button type="reset" id="reset">清除</button>
+        <i class="fa-solid fa-magnifying-glass" @click="send"></i>
       </form>
       <ul class="law-search-area-nav">
         <li v-for="pageObj in PageList" @click="HandlePage(pageObj)"><a :class="{ active: pageObj.isActive }">{{
           pageObj.page }}</a></li>
       </ul>
     </div>
-    <AllLines v-show="NowPage === 'All'" :chapter="inputChapter" :LawLists="lawlist" :UlLists="chapterlist" />
+    <AllLines v-show="NowPage === 'All'" :chapter="inputChapter" :LawLists="data" :UlLists="chapterlist" />
     <Chapter v-show="NowPage === 'Chapter'" :chapter="inputChapter" :ChapterOption="chapterOption" />
-    <Text v-show="NowPage === 'Text'" :LawLists="lawlist" />
+    <Text v-show="NowPage === 'Text'" :LawLists="data" />
   </div>
 </template>
 

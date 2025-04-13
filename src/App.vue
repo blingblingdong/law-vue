@@ -4,6 +4,7 @@ import LawPage from './components/LawPage.vue'
 import MyFile from './components/MyFile.vue'
 import FilePage from './components/FilePage.vue'
 import GalleryPage from './components/GalleryPage.vue'
+import LawSourcePage from './components/LawSourcePage.vue'
 import { ref, onMounted } from 'vue'
 import type { UrlGallery } from './types/Folder.ts'
 
@@ -12,6 +13,20 @@ const dataOption = ref('')
 const sidebar = ref(false);
 const nowPage = ref('查詢');
 const urltogallery = ref<UrlGallery | null>(null)
+
+document.addEventListener('keydown', function (event) {
+  // 例如，如果用戶按下 Ctrl+D
+  if (event.ctrlKey && event.key === 's') {
+    nowPage.value = "查詢";
+    event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+
+    // 在這裡添加更多的動作，如打開自訂對話框等
+  } else if (event.ctrlKey && event.key === 'n') {
+    nowPage.value = "資料夾";
+    event.preventDefault();
+  }
+});
+
 
 
 onMounted(async () => {
@@ -69,10 +84,10 @@ if (userid && directory) {
     <button class="ham-but" @click='sidebar = true'><i class="fa-solid fa-burger"></i></button>
   </div>
   <datalist id="law-name-data" v-html='dataOption'></datalist>
-  <search v-if="nowPage === '查詢'" />
-  <LawPage v-else-if="nowPage === '法條'" />
-  <MyFile v-else-if="nowPage === '資料夾'" />
-  <GalleryPage v-else-if="nowPage === '畫廊'" :TheUrl="urltogallery" />
+  <LawSourcePage v-show="nowPage === '查詢'" />
+  <LawPage v-show="nowPage === '法條'" />
+  <MyFile v-show="nowPage === '資料夾'" />
+  <GalleryPage v-show="nowPage === '畫廊'" :TheUrl="urltogallery" />
 </template>
 
 <style scoped>

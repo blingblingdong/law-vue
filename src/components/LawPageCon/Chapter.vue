@@ -58,8 +58,8 @@ async function get_chapter_lawList(chapter1: string, chapter2: string): Promise<
         </div>
         <ul class='law-block-lines'>
           <template v-for="line in law.lines">
-            <div v-if="line.startsWith(' ')" class="law-indent">{{ line }}</div>
-            <li v-else class="law-block-line">{{ line }}</li>
+            <div v-if="line.line_type === 'indent'" class="law-indent">{{ line.content }}</div>
+            <div v-else class="law-block-line line-0000 show-number">{{ line.content }}</div>
           </template>
         </ul>
       </div>

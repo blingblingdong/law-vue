@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { type Law, loadLaw, useProcessedLines } from '../types/Law.ts'
+import { type Law, loadLaw, useProcessedLines, type Line } from '../types/Law.ts'
 
 const lawName = ref('')
 const lawNum = ref('')
@@ -8,7 +8,7 @@ const lawNum = ref('')
 import { getApiUrl } from '../utils/api.ts'
 
 const ApiLink = getApiUrl();
-const lines = ref<string[]>([])
+const lines = ref<Line[]>([])
 const lines_show = ref(false)
 
 const fastSearch = async (event: Event) => {
@@ -22,7 +22,6 @@ const fastSearch = async (event: Event) => {
   }
 }
 
-const { processedLines } = useProcessedLines(lines);
 </script>
 
 <template>
@@ -43,12 +42,12 @@ const { processedLines } = useProcessedLines(lines);
 
     <div id='fast-search-result'>
       <div id='result-area'>
-        <ul class='law-block-lines'>
-          <template v-for="(line) in processedLines">
-            <div v-if="line.isIndent" class="law-indent">{{ line.text }}</div>
-            <li v-else class="law-block-line">{{ line.text }}</li>
+        <div class='law-block-lines'>
+          <template v-for="line in lines">
+            <div v-if="line.line_type === 'indent'" class="law-indent">{{ line.content }}</div>
+            <div v-else class="law-block-line line-0000 show-number">{{ line.content }}</div>
           </template>
-        </ul>
+        </div>
       </div>
       <div id='fast-search-tool-bar' v-if="lines_show">
         <div class='tool-bar-item'><i class="fa-solid fa-book"></i></div>
@@ -62,6 +61,34 @@ const { processedLines } = useProcessedLines(lines);
 </template>
 
 <style scoped>
+.law-block-line::before {
+  counter-increment: num;
+  content: counter(num);
+  position: absolute;
+  left: -2.5em;
+  margin-left: -1em;
+  text-align: right;
+  color: white;
+}
+
+.law-block-line {
+  margin-left: 1em;
+  text-indent: -0em;
+  position: relative;
+}
+
+.law-indent {
+  margin-left: 3em;
+  text-indent: -2em;
+}
+
+.law-block-lines {
+  counter-reset: num;
+}
+
+
+
+
 #search-area {
   display: flex;
   flex-direction: column;
@@ -137,6 +164,8 @@ const { processedLines } = useProcessedLines(lines);
   border: none;
   outline: none;
 }
+
+
 
 @media only screen and (max-width: 500px) {
   #chapter {

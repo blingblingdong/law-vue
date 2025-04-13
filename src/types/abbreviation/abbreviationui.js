@@ -3,7 +3,7 @@
  * For licensing, see LICENSE.md.
  */
 
-import { ButtonView, ContextualBalloon, Plugin, clickOutsideHandler } from 'ckeditor5';
+import { ButtonView, ContextualBalloon, Plugin, clickOutsideHandler, HtmlEmbed  } from 'ckeditor5';
 import FormView from './abbreviationview';
 import {SSRLaw} from "../Law"
 import { nextTick} from "vue"
@@ -23,7 +23,7 @@ export default class AbbreviationUI extends Plugin {
 		editor.ui.componentFactory.add( 'abbreviation', () => {
 			const button = new ButtonView();
 
-			button.label = 'Abbreviation';
+			button.label = '加入法條';
 			button.tooltip = true;
 			button.withText = true;
 
@@ -46,18 +46,18 @@ export default class AbbreviationUI extends Plugin {
 			const title = formView.titleInputView.fieldView.element.value;
 			const abbr = formView.abbrInputView.fieldView.element.value;
       let law = await SSRLaw(abbr, title);
-      if(law) {
-        	editor.model.change( writer => {
-				editor.model.insertContent( writer.createText("insertLawCardPlace") );
-      });
-      await nextTick();
-      let x = editor.getData();
-      alert(x);
-      x =  x.replace(`insertLawCardPlace`, law);
-      editor.setData(x);
+      if (law) {
+		// 將 HTML 轉成 CKEditor 可接受的 View Fragment
+		const viewFragment = editor.data.processor.toView(law);
 
-    }
+		// 將 View Fragment 轉成 Model Fragment
+		const modelFragment = editor.data.toModel(viewFragment);
 
+		editor.model.change(writer => {
+			// 插入 Model Fragment 到目前游標位置
+			editor.model.insertContent(modelFragment);
+		});
+	}
 
 		
 			// Hide the form view after submit.

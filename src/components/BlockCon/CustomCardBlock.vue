@@ -6,20 +6,25 @@
         <i class="fas fa-caret-up" v-show="showLines" @click="showLines = false"></i>
         <i class="fas fa-caret-down" v-show="!showLines" @click="showLines = true"></i>
       </p>
-      <ul class='law-block-lines' v-show="showLines">
+      <div class="tool-bar">
+        <p>history</p>
+        <p>original</p>
+        <p>note</p>
+      </div>
+      <div class='law-block-lines' v-show="showLines">
         <template v-for="line in card.lines">
           <div v-if="line.line_type === 'indent'" :class="line.attributes?.class" :style="line.attributes?.style">
             <template v-if="line.children" v-for="child in line.children">
               <InlineNodeTemplate :inline-node="child as InlineNode" />
             </template>
           </div>
-          <li v-else class="law-block-line" :class="line.attributes?.class" :style="line.attributes?.style">
+          <div v-else class="law-block-line" :class="line.attributes?.class" :style="line.attributes?.style">
             <template v-if="line.children" v-for="child in line.children">
               <InlineNodeTemplate :inline-node="child as InlineNode" />
             </template>
-          </li>
+          </div>
         </template>
-      </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -28,6 +33,7 @@
 import { defineProps, ref, onMounted } from 'vue'
 import type { Attributes, InlineNode, Block, Note, Line, LawCard } from '../../types/Note'
 import InlineNodeTemplate from './InlineNodeTemplate.vue'
+import { to_history_link } from '../../types/Law.ts'
 
 
 const showLines = ref(true);
@@ -46,6 +52,51 @@ if (props.block.data) {
 </script>
 
 <style scoped>
+.tool-bar {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.tool-bar p {
+  color: white;
+  margin: 0px;
+  border: none;
+  background-color: var(--gray-color);
+}
+
+.tool-bar button:hover {
+  color: var(--primary-color);
+}
+
+
+.law-block-line::before {
+  counter-increment: num;
+  content: counter(num);
+  margin-right: 0.5rem;
+  margin-left: -1em;
+  text-align: right;
+  color: white;
+}
+
+.law-block-line {
+  margin-left: 1em;
+  text-indent: -0em;
+  position: relative;
+}
+
+.law-indent {
+  margin-left: 3em;
+  text-indent: -2em;
+}
+
+.law-block-lines {
+  counter-reset: num;
+}
+
+
+
+
 .law-block {
   color: white;
   border-left: 4px solid var(--accent-color);
@@ -85,6 +136,6 @@ if (props.block.data) {
 
 
 .law-block-lines {
-  list-style-type: upper-roman !important;
+  list-style-type: none;
 }
 </style>

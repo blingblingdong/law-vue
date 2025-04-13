@@ -3,9 +3,14 @@ import type { Ref } from 'vue';
 export interface Law {
   num: string;
   chapter: string[];
-  lines: string[];
+  lines: Line[];
   href: string;
   id: string;
+}
+
+export interface Line {
+  line_type: string,
+  content: string,
 }
 
 export async function loadLaw(chapter: string, num: string, ApiUrl: string): Promise<Law | null> {
@@ -69,6 +74,7 @@ export async function get_all_lawList(chapter: string, ApiLink: string): Promise
     }
 
     const data = await response.json() as LawList[];
+    console.log("✅ 回傳資料：", JSON.stringify(data, null, 2));
     // 利用型別斷言將 data 當成 Law
     return data;
   } catch (error) {
@@ -137,5 +143,19 @@ export async function SSRLaw(chapter: string, num: string): Promise<string | nul
     console.log("FetchSSR Law Error: ", error)
   }
   return null
+}
+
+export function to_history_link(chapter: string, num: string): string {
+
+  const lawIDMap: Record<string, any> = {
+    民法: "FL001351",
+    中華民國刑法: "FL001424",
+  }
+
+  const getLawID = (type: string) => {
+    return lawIDMap[type]
+  }
+
+  return `https://mojlaw.moj.gov.tw/LawContentExtentHistory.aspx?LSID=${getLawID(chapter)}&LawNo=${num}`
 }
 
