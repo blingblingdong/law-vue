@@ -175,7 +175,6 @@ const getlawsource = async (item: othersourceitem) => {
   try {
     const res = await fetch(`${ApiLink}/${item.sourcetype}/${item.id}`);
     data.value = await res.json();
-    alert(data.value.no);
   } catch (e) {
     console.error("載入資料失敗:", e);
     console.log(`${item.sourcetype}、${item.id}`)

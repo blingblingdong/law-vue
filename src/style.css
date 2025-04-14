@@ -16,7 +16,8 @@
   color: darkorange;
 }
 
-body {
+body,
+html {
   margin: 0;
   display: flex;
   background-color: black !important;
@@ -29,6 +30,12 @@ input {
   border: none;
   outline: none;
 }
+
+* {
+  background-color: transparent;
+  color: inherit;
+}
+
 
 
 h1 {

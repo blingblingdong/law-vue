@@ -113,6 +113,11 @@ if (userid && directory) {
 }
 
 
+#app,
+body {
+  background-color: black !important;
+  color: white !important;
+}
 
 .header-container {
   display: flex;
