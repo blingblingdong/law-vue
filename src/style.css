@@ -309,3 +309,8 @@ h1 {
   margin-left: 3em;
   text-indent: -2em;
 }
+
+body {
+  background-color: black;
+  color: white;
+}
