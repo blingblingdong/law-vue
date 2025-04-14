@@ -19,9 +19,9 @@
 body {
   margin: 0;
   display: flex;
-  background-color: black;
+  background-color: black !important;
   font-family: "Playwrite DE Grund", cursive;
-  color: white;
+  color: white !important;
 
 }
 
@@ -308,9 +308,4 @@ h1 {
 .law-indent {
   margin-left: 3em;
   text-indent: -2em;
-}
-
-body {
-  background-color: black;
-  color: white;
 }
