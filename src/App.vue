@@ -188,6 +188,13 @@ option {
   text-decoration: none;
 }
 
+.navbar a:hover {
+  color: darkorange;
+  cursor: pointer;
+}
+
+
+
 .sidebar {
   position: fixed;
   top: 0;

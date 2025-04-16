@@ -157,6 +157,7 @@ const lawdata = ref<null | LawList[]>(null);
 const chapterlist = ref<null | ChapterUl[]>(null);
 const nowareatype = ref('');
 const nowarea = ref("search");
+const reasultcomponent = ref<othersourceitem[]>([])
 
 
 const getlawsource = async (item: othersourceitem) => {
@@ -164,11 +165,15 @@ const getlawsource = async (item: othersourceitem) => {
   history.value.push(item);
   localStorage.setItem("sourcename", JSON.stringify(history.value))
   nowarea.value = 'result';
+  reasultcomponent.value.push(item)
+  const set = new Set(reasultcomponent.value.reverse().slice(0, 5));
+  reasultcomponent.value = Array.from(set);
   if (item.sourcetype === "lawname") {
     realchapter.value = item.name;
     lawdata.value = await get_all_lawList(realchapter.value, ApiLink);
     chapterlist.value = await getChapterList(realchapter.value, ApiLink);
     nowareatype.value = item.sourcetype;
+
     return
   }
 
@@ -185,7 +190,6 @@ const getlawsource = async (item: othersourceitem) => {
 
 const backtosearch = () => {
   nowarea.value = 'search';
-  data.value = null;
 }
 
 
@@ -201,13 +205,19 @@ const showlist = ref(false);
 
 <template>
   <div id="lawsourcepage">
+    <div id="tag-area">
+      <div v-for="item in reasultcomponent.slice(0, 5)" @click="getlawsource(item)">{{ item.name }}</div>
+    </div>
+
+
+
     <div id="search-area" v-show="nowarea === 'search'">
       <div id="inputRow">
         <input v-model="search" :placeholder="placeholder" @input="inputing">
         <div class="sourrcetypelist">
-          <div @click="showlist = true" class="selected" :style="{ 'background-color': get_style(searchtype).color }"><i
-              class="fa-solid fa-chevron-down" v-show="!showlist"></i>
-            <i class="fa-solid fa-chevron-up" v-show="showlist"></i>
+          <div class="selected" :style="{ 'background-color': get_style(searchtype).color }"><i
+              class="fa-solid fa-chevron-down" v-show="!showlist" @click="showlist = true"></i>
+            <i class="fa-solid fa-chevron-up" v-show="showlist" @click="showlist = false"></i>
 
             <p>{{ get_style(searchtype).name }}</p>
           </div>
@@ -223,7 +233,7 @@ const showlist = ref(false);
         <p>history：</p>
         <div id="historylist" v-if="history">
           <template v-if="history">
-            <div v-for="item in history" class="historyitem" @click="getlawsource(item)">{{ item.name.trim() }}
+            <div v-for="item in reversedHistory" class="historyitem" @click="getlawsource(item)">{{ item.name.trim() }}
             </div>
 
           </template>
@@ -258,11 +268,10 @@ const showlist = ref(false);
       </div>
     </div>
 
-
+    <div @click="backtosearch">
+      search again
+    </div>
     <div id="result-area" v-if="nowarea === 'result'">
-      <div @click="backtosearch">
-        search again
-      </div>
       <div v-if="nowareatype === 'oldinterpretation'">
         <OldinterpretationBlock :datax="data" />
       </div>
@@ -291,6 +300,26 @@ const showlist = ref(false);
 
 
 <style scoped>
+#tag-area {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  justify-content: flex-start;
+}
+
+#tag-area div {
+  padding: 5px 10px;
+  text-align: center;
+  max-height: 20px;
+  overflow-y: auto;
+}
+
+#tag-area div:hover {
+  cursor: pointer;
+  color: var(--primary-color)
+}
+
+
+
 .selected {
   margin: 5px;
   padding: 5px;
@@ -343,7 +372,7 @@ const showlist = ref(false);
   gap: 10px;
   max-height: 100px;
   overflow-y: auto;
-  flex-wrap: wrap-reverse;
+  flex-wrap: wrap;
 }
 
 #search-area {
@@ -400,7 +429,8 @@ const showlist = ref(false);
 }
 
 #inputRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 9fr 1fr;
   gap: 10px;
   align-items: center;
   justify-content: center;

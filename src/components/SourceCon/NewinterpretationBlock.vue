@@ -1,9 +1,9 @@
 <template>
-  <h2 class="no">{{ newinterpretationdata.no }}</h2>
-  <div class="row name">{{ newinterpretationdata.name }}</div>
-  <div class="row date">{{ newinterpretationdata.date }}</div>
-  <pre class="row reason">{{ newinterpretationdata.reason }}</pre>
-  <pre class="row content">{{ newinterpretationdata.content }}</pre>
+  <h2 class="no">{{ datax.no }}</h2>
+  <div class="row name">{{ datax.name }}</div>
+  <div class="row date">{{ datax.date }}</div>
+  <pre class="row reason">{{ datax.reason }}</pre>
+  <pre class="row content">{{ datax.content }}</pre>
 </template>
 
 <script lang="ts" setup>

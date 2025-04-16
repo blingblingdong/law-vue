@@ -151,11 +151,18 @@ const showchapter = (l: Law) => {
   counter-reset: num;
 }
 
+input {
+  background-color: var(--gray-color);
+  padding: 5px;
+  border-radius: 5px;
+}
+
 
 
 
 #all-lines-area {
-  display: flex;
+  display: grid;
+  grid-template-columns: 4fr 1fr;
   gap: 5px;
 }
 
