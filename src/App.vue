@@ -38,7 +38,7 @@ onMounted(async () => {
   }
 })
 
-let mainli = ref<string[]>(["查詢", "法條", "資料夾", "畫廊"]);
+let mainli = ref<string[]>(["查詢", "資料夾", "畫廊"]);
 
 const PageHandel = function (li: string) {
   nowPage.value = li;
@@ -61,46 +61,63 @@ if (userid && directory) {
 
 }
 
+const activecolor = (page: string) => {
+  const color = page === nowPage.value ? 'darkorange' : 'white';
+  return color
+}
+
+
+const showsidebar = ref(true);
 </script>
 
 <template>
-  <div class="header-container">
-    <div class="header">
-      <img src='/訪客.png' id='guest-png' class='user-btn catpng'>
-      <img src='/cat.png' style='display:none' id='user-png' class='user-btn catpng'>
-      <div class="header-title search-btn" id='big-header'>Rust Law Web</div>
+  <div id="realbody">
+
+
+    <i class="fa-solid fa-bars" id="bars" @click="showsidebar = true" v-show="!showsidebar"></i>
+
+    <div v-show="showsidebar">
+      <div id="thesidebar">
+        <img src='/訪客貓.png' id='user-png' class='user-btn catpng'>
+        <div id="pagelist">
+          <i class="fa-solid fa-magnifying-glass" @click="nowPage = '查詢'" :style="{ color: activecolor('查詢') }"></i>
+          <i class="fa-solid fa-folder" @click="nowPage = '資料夾'" :style="{ color: activecolor('資料夾') }"></i>
+          <i class="fa-solid fa-globe" @click="nowPage = '畫廊'" :style="{ color: activecolor('畫廊') }"></i>
+          <i class="fa-solid fa-xmark" @click="showsidebar = false"></i>
+        </div>
+      </div>
     </div>
-
-    <div class='header-title search-btn' id='small-header'>Rust Law web</div>
-
-    <ul class="navbar hider">
-      <li v-for="li in mainli" @click="PageHandel(li)"><a>{{ li }}</a></li>
-    </ul>
-    <ul class="sidebar" v-if="sidebar">
-      <li @click="sidebar = false"><a>關閉</a></li>
-      <li v-for="li in mainli" @click="PageHandel(li)">{{ li }}</li>
-    </ul>
-
-    <button class="ham-but" @click='sidebar = true'><i class="fa-solid fa-burger"></i></button>
+    <div id="main-content">
+      <datalist id="law-name-data" v-html='dataOption'></datalist>
+      <LawSourcePage v-show="nowPage === '查詢'" />
+      <MyFile v-show="nowPage === '資料夾'" />
+      <GalleryPage v-show="nowPage === '畫廊'" :TheUrl="urltogallery" />
+    </div>
   </div>
-  <datalist id="law-name-data" v-html='dataOption'></datalist>
-  <LawSourcePage v-show="nowPage === '查詢'" />
-  <LawPage v-show="nowPage === '法條'" />
-  <MyFile v-show="nowPage === '資料夾'" />
-  <GalleryPage v-show="nowPage === '畫廊'" :TheUrl="urltogallery" />
 </template>
 
 <style scoped>
-@media only screen and (max-width: 600px) {
-  .ham-but {
-    display: block !important;
-  }
-
-  .hider {
-    display: none !important;
-  }
-
+#realbody {
+  display: flex;
+  gap: 10px;
 }
+
+
+#thesidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: center;
+  position: sticky;
+  top: 5%;
+}
+
+#bars {
+  position: fixed;
+  top: 5%;
+}
+
 
 .ham-but {
   display: none;
@@ -112,6 +129,19 @@ if (userid && directory) {
   border: none;
 }
 
+#pagelist {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 50px;
+  position: sticky;
+}
+
+#pagelist i {
+  font-size: 20px;
+}
+
+
 
 #app,
 body {
@@ -121,7 +151,7 @@ body {
 
 .header-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding-top: 10px;
   top: 10px;
@@ -139,25 +169,13 @@ option {
 
 
 .header-title {
-  font-size: 30px;
+  font-size: 25px;
   color: darkorange;
   text-align: center;
   font-family: "Playwrite DE Grund", cursive;
 }
 
-@media only screen and (max-width: 600px) {
-  .header-title {
-    font-size: 30px;
-  }
-
-  #big-header {
-    display: none;
-  }
-
-  #small-header {
-    display: flex;
-  }
-}
+@media only screen and (max-width: 600px) {}
 
 
 .navbar {
@@ -214,6 +232,7 @@ option {
 
 .header {
   display: flex;
+  justify-content: center;
 }
 
 .main-li a {
@@ -223,7 +242,7 @@ option {
 
 
 .catpng {
-  width: 60px;
+  width: 50px;
   border-radius: 50%;
 }
 </style>

@@ -1,127 +1,61 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import AllLines from "./LawPageCon/AllLines.vue"
 import Text from "./LawPageCon/Text.vue"
 import Chapter from "./LawPageCon/Chapter.vue"
 import type { Law, LawList, ChapterUl } from '../types/Law.ts'
 import { get_all_lawList, getChapterList, load_chapter_datalist } from '../types/Law.ts'
 
-
-const realchapter = ref('');
-const chapterlist = ref<null | ChapterUl[]>(null);
-
 import { getApiUrl } from '../utils/api.ts'
-
 const ApiLink = getApiUrl();
-const chapterOption = ref<null | string>("");
-
-
-interface PageListType {
-  page: string;
-  isActive: boolean;
-}
-
 const NowPage = ref('All');
-const inputChapter = ref('')
-const PageList = ref<PageListType[]>([
-  { page: "All", isActive: true }, { page: "Chapter", isActive: false }, { page: "Text", isActive: false }, { page: "About", isActive: false }
-]);
 
-const HandlePage = function (pageObj: PageListType) {
-  PageList.value.forEach(item => {
-    item.isActive = (item.page === pageObj.page);
-  });
-  NowPage.value = pageObj.page;
-}
-
+const chapterlist = ref<null | ChapterUl[]>(null);
+const chapterOption = ref<null | string>("");
 const data = ref<null | LawList[]>(null);
 
-const send = async (event: Event) => {
-  event.preventDefault();
-  realchapter.value = inputChapter.value;
-  data.value = await get_all_lawList(realchapter.value, ApiLink);
-  chapterlist.value = await getChapterList(realchapter.value, ApiLink);
-  chapterOption.value = await load_chapter_datalist(realchapter.value, ApiLink);
+const props = defineProps<{
+  chapter: string;
+}>();
+
+onMounted(async () => {
+  data.value = await get_all_lawList(props.chapter, ApiLink);
+  chapterlist.value = await getChapterList(props.chapter, ApiLink);
+  chapterOption.value = await load_chapter_datalist(props.chapter, ApiLink);
+});
+
+const HandlePage = function (page: string) {
+  NowPage.value = page;
 }
+
+
+const pagelist = ["All", "Chapter", "Text"]
+
+
+
+
 </script>
 
 <template>
-
-
   <div id="test-area">
-    <div id="law-search-area">
-      <form id="law-search-area-form">
-        <input list="law-name-data" id="search-chapter" v-model="inputChapter">
-        <i class="fa-solid fa-magnifying-glass" @click="send"></i>
-      </form>
-      <ul class="law-search-area-nav">
-        <li v-for="pageObj in PageList" @click="HandlePage(pageObj)"><a :class="{ active: pageObj.isActive }">{{
-          pageObj.page }}</a></li>
-      </ul>
-    </div>
-    <AllLines v-show="NowPage === 'All'" :chapter="inputChapter" :LawLists="data" :UlLists="chapterlist" />
-    <Chapter v-show="NowPage === 'Chapter'" :chapter="inputChapter" :ChapterOption="chapterOption" />
+    <ul class="law-search-area-nav">
+      <li v-for="page in pagelist" @click="HandlePage(page)">
+        <a :class="{ active: NowPage === page }">{{ page }}</a>
+      </li>
+    </ul>
+    <AllLines v-show="NowPage === 'All'" :chapter="chapter" :LawLists="data" :UlLists="chapterlist" />
+    <Chapter v-show="NowPage === 'Chapter'" :chapter="chapter" :ChapterOption="chapterOption" />
     <Text v-show="NowPage === 'Text'" :LawLists="data" />
   </div>
 </template>
 
 <style scoped>
 /* 讓表單內容更居中美觀 */
-#law-search-area-form {
-  display: flex;
-  width: 100%;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  /* 表單項目之間的間距 */
-}
-
-
-#law-search-area-form input,
-#law-search-area-form textarea {
-  margin: 10px 0px;
-  padding: 10px 10px;
-  border: none;
-  font-size: 20px;
-  border-radius: 5px;
-}
-
-
-@media only screen and (max-width: 786px) {
-
-  #law-search-area-form input,
-  #law-search-area-form textarea,
-  #law-search-area-form button {
-    font-size: 15px;
-  }
-
-}
-
-#law-show-area-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  /* 表單項目之間的間距 */
-}
-
-#law-show-area-form input,
-#law-show-area-form textarea {
-  margin: 10px 0px;
-  padding: 5px 10px;
-  border: none;
-  font-size: 20px;
-  border-radius: 5px;
-}
-
 /* 確保父容器全屏並設置 Flexbox */
 #law-search-area {
   /* 區域高度設為全屏 */
   width: 100vw;
   /* 區域寬度設為全屏 */
-  margin-top: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;

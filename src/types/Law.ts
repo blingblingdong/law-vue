@@ -100,7 +100,7 @@ export async function getChapterList(chapter: string, ApiLink: string): Promise<
   }
 }
 
-export async function get_chapter_lawList(chapter1: string, chapter2: string, ApiLink: string): Promise<LawList[] | null> {
+export async function get_chapter_lawList(chapter1: string, chapter2: string, ApiLink: string): Promise<Law[] | null> {
   const chapterData = { chapter1: chapter1, chapter2: chapter2 };
   const res = await fetch(`${ApiLink}/lawList_by_chapter`, {
     method: 'POST',
@@ -110,7 +110,7 @@ export async function get_chapter_lawList(chapter1: string, chapter2: string, Ap
     body: JSON.stringify(chapterData),
   })
   const data = await res.json();
-  return data as LawList[];
+  return data as Law[];
 }
 
 export async function load_chapter_datalist(chapter: string, ApiLink: string): Promise<string | null> {

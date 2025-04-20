@@ -68,8 +68,9 @@
         <p>search by text</p>
         <input v-model="searchText"></input>
         <p v-if="searchText !== ''">find {{ count }} element</p>
-        <p v-if="searchText !== ''">
-          <a @click.prevent="handleClick">next</a>
+        <p v-if="searchText !== ''" id="searchbytextbtn">
+          <a @click.prevent="handleClick" id="nextbtn">next</a>
+          <a @click.prevent="handleClick" id="prebtn">pre</a>
         </p>
       </div>
     </div>
@@ -240,6 +241,7 @@ const saveNote = async () => {
 }
 
 
+
 const handleClick = () => {
   if (goCount.value === count.value) {
     goCount.value = 0;
@@ -254,6 +256,7 @@ const handleClick = () => {
     }
   });
 };
+
 
 const clickNav = (id: string) => {
   const element = document.getElementById(id);
@@ -295,6 +298,28 @@ const IsScroll = function (id: string) {
 </script>
 
 <style scoped>
+#searchbytextbtn {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+
+#nextbtn:hover,
+#prebtn:hover {
+  color: var(--primary-color);
+  cursor: pointer;
+
+
+}
+
+
+input {
+  background-color: var(--gray-color) !important;
+  padding: 5px;
+  border-radius: 5px;
+}
+
 #ppp {
   display: flex !important;
 }

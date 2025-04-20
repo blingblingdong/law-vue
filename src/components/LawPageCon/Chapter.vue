@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import type { Law, LawList } from '../../types/Law.ts'
-import { getApiUrl } from '../../utils/api.ts'
+import { ref } from 'vue'
+import { type Law, type LawList, get_chapter_lawList } from '../../types/Law.ts'
+import { getApiUrl } from '../../utils/api'
 
 const ApiLink = getApiUrl();
 const props = defineProps<{
@@ -9,29 +9,20 @@ const props = defineProps<{
   ChapterOption: string | null;
 }>();
 
-const LawLists = ref<null | LawList[]>(null)
+const LawLists = ref<null | Law[]>(null)
 
 const searchChapter = ref('');
 const search = async () => {
-  const list = await get_chapter_lawList(props.chapter, searchChapter.value);
+  const list = await get_chapter_lawList(props.chapter, searchChapter.value, ApiLink);
   if (list != null) {
     LawLists.value = list;
+  } else {
+    LawLists.value = null;
   }
 
 };
 
-async function get_chapter_lawList(chapter1: string, chapter2: string): Promise<LawList[] | null> {
-  const chapterData = { chapter1: chapter1, chapter2: chapter2 };
-  const res = await fetch(`${ApiLink}/lawList_by_chapter"`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(chapterData),
-  })
-  const data = await res.json();
-  return data as LawList[];
-}
+
 
 
 
@@ -50,9 +41,8 @@ async function get_chapter_lawList(chapter1: string, chapter2: string): Promise<
       <button id="show-chapter">章節</button>
     </form>
     <div id="chapter-ul" style="display: none"></div>
-    <div v-for="LawListObj in LawLists">
-      <div v-for="c in LawListObj.chapter" class='chpaterAreaC'>{{ c }}</div>
-      <div class="law-card" v-for="law in LawListObj.laws">
+    <div v-if="LawLists">
+      <div class="law-card" v-for="law in LawLists">
         <div class="law-card-title">
           <p>第{{ law.num }}條</p>
         </div>

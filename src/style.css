@@ -19,12 +19,24 @@
 body,
 html {
   margin: 0;
-  display: flex;
   background-color: black !important;
   font-family: "Playwrite DE Grund", cursive;
   color: white !important;
 
 }
+
+body {
+  display: block !important;
+  width: 100% !important;
+
+}
+
+input {
+  background-color: var(--gray-color);
+  border-radius: 5px;
+}
+
+
 
 input {
   border: none;

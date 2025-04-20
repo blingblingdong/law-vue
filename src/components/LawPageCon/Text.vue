@@ -43,7 +43,7 @@ const lawlines = function (lines: Line[]) {
 <template v-if="LawList">
   <div id="searchTextArea">
     <input v-model="text" id="searchTextInput"></input>
-    <div v-for="LawListObj in LawLists">
+    <div v-for="LawListObj in LawLists" id="lawlist">
       <div class="law-card" v-for="law in LawListObj.laws" :id="law.chapter[0] + law.num"
         v-show="IsSearchingText(law.lines) && text !== ''">
         <div class="law-card-title">
@@ -85,15 +85,14 @@ const lawlines = function (lines: Line[]) {
 
 
 
-
 #searchTextInput {
-  width: 80%;
-  margin: 10px 10px;
-  padding: 5px 10px;
+  width: 50%;
+  padding: 10px 20px;
+  align-self: center;
 }
 
 #searchTextArea {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
 }

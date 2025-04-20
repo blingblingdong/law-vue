@@ -8,6 +8,7 @@ import NewinterpretationBlock from './SourceCon/NewinterpretationBlock.vue'
 import OldinterpretationBlock from './SourceCon/OldinterpretationBlock.vue'
 import ResolutionBlock from './SourceCon/ResolutionBlock.vue'
 import PrecedentBlock from './SourceCon/PrecedentBlock.vue'
+import LawPage from './LawPage.vue'
 
 
 const search = ref<String | null>(null);
@@ -16,7 +17,7 @@ const placeholder = ref("");
 const data = ref();
 const othersourcelist = ref<null | othersourceitem[]>(null);
 const displaysourcelist = ref<null | othersourceitem[]>(null);
-import { getApiUrl } from '../utils/api.ts'
+import { getApiUrl } from '../utils/api'
 const pagenum = ref(0)
 const ApiLink = getApiUrl();
 const history = ref<othersourceitem[]>([]);
@@ -33,7 +34,7 @@ onMounted(async () => {
 
 onMounted(async () => {
   othersourcelist.value = [];
-  style_vec.forEach(async item => {
+  style_vec.filter(item => item.sourcetype !== 'all').forEach(async item => {
     const list = await getlawsourcelist(item.sourcetype);
     othersourcelist.value = othersourcelist.value?.concat(list) as othersourceitem[];
   });
@@ -285,7 +286,7 @@ const showlist = ref(false);
         <NewinterpretationBlock :datax="data" />
       </div>
       <div id="lawnameresult" v-else-if="nowareatype === 'lawname'">
-        <AllLines v-if="lawdata" :chapter="realchapter" :LawLists="lawdata" :UlLists="chapterlist" />
+        <LawPage :chapter="realchapter" />
       </div>
     </div>
 
@@ -315,10 +316,13 @@ const showlist = ref(false);
 
 #tag-area div:hover {
   cursor: pointer;
-  color: var(--primary-color)
+  color: var(--primary-color);
 }
 
-
+.historyitem:hover {
+  color: darkorange;
+  cursor: pointer;
+}
 
 .selected {
   margin: 5px;

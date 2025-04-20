@@ -2,7 +2,7 @@
 import { onMounted, ref, watch, onUnmounted } from 'vue'
 import type { Law, LawList, ChapterUl, Line } from '../../types/Law.ts'
 import PrintChapter from '././PrintChapter.vue'
-import { to_history_link } from '../../types/Law.ts'
+import { to_history_link } from '../../types/Law'
 
 
 
@@ -173,11 +173,10 @@ input {
 #all-chapter {
   flex: 30%;
   top: 20%;
-  position: sticky;
 }
 
 #realchapter {
-  top: 20%;
+  top: 10%;
   position: sticky;
 }
 
