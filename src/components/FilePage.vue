@@ -415,6 +415,7 @@ a {
 #publicFileHeader {
   display: flex;
   align-items: center;
+  margin-top: 50px;
 }
 
 #sharePage,

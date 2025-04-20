@@ -345,4 +345,42 @@ input {
 a {
   text-decoration: none;
 }
+
+@media only screen and (max-width: 600px) {
+  #toolarea {
+    display: none;
+  }
+
+  #newinterpretation_area {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin-right: 30px;
+  }
+
+}
+
+@media only screen and (max-width: 500px) {
+
+  .content {
+    margin: 10px 10px;
+    font-size: 14px;
+    line-height: 25px;
+    color: #EAEAEA;
+    margin: 10px 10px;
+  }
+
+  .title,
+  .description {
+    font-size: 1.1rem;
+    font-weight: 500;
+    /* 正確的 font-weight 應該是沒有單位的 */
+    line-height: 3rem;
+    margin-left: 0px;
+    margin-top: 0px;
+  }
+
+
+
+}
 </style>

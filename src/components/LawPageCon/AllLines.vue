@@ -226,4 +226,17 @@ a {
 .lawToolBar a:hover {
   color: var(--primary-color);
 }
+
+@media only screen and (max-width: 600px) {
+  #all-chapter {
+    display: none;
+  }
+
+  #all-lines-area {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+}
 </style>
