@@ -13,24 +13,9 @@ const props = defineProps<{
 
 const LawLists = ref<null | Law[]>(null)
 
-const searchChapter = ref('');
-const search = async () => {
-  let chapter2 = searchChapter.value.replace(/\s+/g, "")
-  const list = await get_chapter_lawList(props.chapter, searchChapter.value, ApiLink);
-  if (list != null) {
-    LawLists.value = list;
-  } else {
-    LawLists.value = null;
-  }
-
-};
 
 
 const enterul = ref('');
-const enterli = ref('');
-const enterli2 = ref('');
-const enterli3 = ref('');
-const enterli4 = ref('');
 
 const showchapter = async (name: string) => {
   const chapter2 = name.replace(/\s+/g, "");
@@ -46,12 +31,6 @@ const showlawlist = ref(true);
 
 <template>
   <div id="chapter-area">
-    <form id="chapter-form">
-      <input list="chapter-name-data" id="chapter-name" @input="search" v-model="searchChapter">
-      <datalist id="chapter-name-data" v-html="ChapterOption"></datalist>
-      <button type="submit">查詢</button>
-      <button id="show-chapter">章節</button>
-    </form>
     <div>
       <div>Chapter</div>
       <ul v-if="ullist" v-for="ul in ullist">

@@ -31,11 +31,11 @@
         </div>
         <div class="row">
           <h3 class="title" id="Content">Content</h3>
-          <div class="content" v-html="mainparts"></div>
+          <div class="content" v-html="mainparts" @click="handleclicklaw"></div>
         </div>
         <div class="row">
           <h3 class="title" id="Reason">Reason</h3>
-          <div class="content" v-html="reason"></div>
+          <div class="content" v-html="reason" @click="handleclicklaw"></div>
         </div>
       </div>
     </div>
@@ -54,7 +54,7 @@
         </ul>
         <ul v-if="lawnamevec" id="lawnamevec">
           <span>Law Link：</span>
-          <li v-for="lawname in lawnamevec">{{ lawname }}</li>
+          <li v-for="lawname in lawnamevec" @click="ui.goToLawPage(lawname)">{{ lawname }}</li>
         </ul>
 
         <p>search by text</p>
@@ -102,8 +102,6 @@ const lawnamevec = ref<string[]>([]);
 import { getApiUrl } from '../../utils/api.ts'
 const ApiLink = getApiUrl();
 onMounted(async () => {
-  mainparts.value = convertToHTML2(props.datax.maincontent);
-  reason.value = convertToHTML(props.datax.reason);
   lawvec.value = [];
   lawnamevec.value = [];
 
@@ -124,13 +122,16 @@ onMounted(async () => {
   let set = new Set(lawnamevec.value);
   lawnamevec.value = Array.from(set) as string[];
 
+  await nextTick();
+
+  mainparts.value = convertToHTML2(props.datax.maincontent);
+  reason.value = convertToHTML(props.datax.reason);
+
 })
 
 watch(
   () => props.datax,
-  (data) => {
-    mainparts.value = convertToHTML2(data.maincontent);
-    reason.value = convertToHTML(data.reason);
+  async (data) => {
     lawvec.value = [];
     lawnamevec.value = [];
 
@@ -151,15 +152,42 @@ watch(
     let set = new Set(lawnamevec.value);
     lawnamevec.value = Array.from(set) as string[];
 
+    await nextTick();
+
+    mainparts.value = convertToHTML2(data.maincontent);
+    reason.value = convertToHTML(data.reason);
+
+
 
   },
 )
 
+import { useUiStore } from '../../store/page.ts'
+const ui = useUiStore();
+
+
+
+const handleclicklaw = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (target.classList.contains('spanlawname')) {
+    const id = target.dataset.lawname;
+    if (id) {
+      ui.goToLawPage(id);
+    }
+  }
+}
 
 const convertToHTML = (text: string): string => {
   return text
     .split('】')
     .map(p => `<p>${p.replace(/\n/g, '')}】</p>`)
+    .map(par => {
+      lawnamevec.value.forEach(lawname => {
+        const replacement = `<span class="spanlawname" data-lawname="${lawname}">${lawname}</span>`
+        par = par.replace(new RegExp(lawname, "g"), replacement);
+      })
+      return par
+    })
     .join('')
 }
 
@@ -167,7 +195,13 @@ const convertToHTML = (text: string): string => {
 const convertToHTML2 = (text: string[]): string => {
   return text
     .map(p => `<p>${p.replace(/\n/g, '')}</p>`)
-    .join('')
+    .map(par => {
+      lawnamevec.value.forEach(lawname => {
+        const replacement = `<span class="spanlawname" data-lawname="${lawname}">${lawname}</span>`
+        par = par.replace(new RegExp(lawname, "g"), replacement)
+      })
+      return par
+    }).join('')
 }
 
 
@@ -226,7 +260,9 @@ function returnfake() {
 
 }
 
-
+span[lawname] {
+  color: darkorange !important;
+}
 
 .law-block-line::before {
   counter-increment: num;

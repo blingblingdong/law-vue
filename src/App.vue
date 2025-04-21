@@ -5,7 +5,7 @@ import MyFile from './components/MyFile.vue'
 import FilePage from './components/FilePage.vue'
 import GalleryPage from './components/GalleryPage.vue'
 import LawSourcePage from './components/LawSourcePage.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import type { UrlGallery } from './types/Folder.ts'
 
 const ApiUrl = 'https://deploylawweb-production.up.railway.app'
@@ -13,6 +13,16 @@ const dataOption = ref('')
 const sidebar = ref(false);
 const nowPage = ref('查詢');
 const urltogallery = ref<UrlGallery | null>(null)
+import { useUiStore } from './store/page.ts'
+const ui = useUiStore();
+
+watch(
+  () => ui.currentPage,
+  (page) => {
+    nowPage.value = page;
+  }
+)
+
 
 document.addEventListener('keydown', function (event) {
   // 例如，如果用戶按下 Ctrl+D

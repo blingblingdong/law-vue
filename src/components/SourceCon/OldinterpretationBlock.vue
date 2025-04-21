@@ -22,13 +22,13 @@
           <h3 class="title" id="Trouble">Trouble Shooting</h3>
           <div class="content">{{ datax.trouble }}</div>
         </div>
-        <div class="row" v-if="datax.reasoning">
+        <div class="row" v-if="ReasonHtml">
           <h3 class="title" id="Reason">Reason</h3>
-          <div class="content">{{ datax.reasoning }}</div>
+          <div class="content" v-html="ReasonHtml" @click="handleclicklaw"></div>
         </div>
         <div class="row">
           <h3 class="title" id="Content">Content</h3>
-          <div class="content" v-html="rawContent"></div>
+          <div class="content" v-html="rawContent" @click="handleclicklaw"></div>
         </div>
       </div>
     </div>
@@ -40,11 +40,11 @@
         </ul>
         <ul v-if="datax.reflaws" id="lawnamevec">
           <span>Law Link：</span>
-          <li v-for="lawname in datax.reflaws">{{ lawname }}</li>
+          <li v-for="lawname in datax.reflaws" @click="ui.goToLawPage(lawname)">{{ lawname }}</li>
         </ul>
         <ul v-if="datax.refinter" id="intervec">
           <span>Interpretation Link：</span>
-          <li v-for="intername in intervec2">釋字{{ intername }}</li>
+          <li v-for="intername in intervec2" @click="ui.goToOldInter(intername.toString())">釋字{{ intername }}</li>
         </ul>
         <p>search by text</p>
         <input @input="searching" v-model="TheSearchingText"></input>
@@ -59,60 +59,14 @@
 
 <script lang="ts" setup>
 import { defineProps, ref, onMounted, nextTick, watch } from 'vue'
-import type { Attributes, InlineNode, Block, Note } from '../../types/Note'
 import { type Law, loadLaw } from '../../types/Law'
 import LawCard from '../LawCard.vue'
 import { getApiUrl } from '../../utils/api'
+import { useUiStore } from '../../store/page.ts'
 const ApiLink = getApiUrl();
 
 
-
-const chaptervec = ["Date", "Trouble", "Reason", "Content"];
-const searchText = ref("");
-const realpage = ref<HTMLElement | null>(null)
-const count = ref(0);
-const goCount = ref(0);
-const html = ref('');
-const TheSearchingText = ref('');
-
-const searching = () => {
-  searchText.value = TheSearchingText.value;
-  count.value = 0;
-  fakePageHtml.value = returnfake();
-}
-
-const handleClick = () => {
-  if (goCount.value === count.value) {
-    goCount.value = 0;
-  } else {
-    goCount.value += 1;
-  }
-  // 更新完成後手動設定 hash（或依需求處理）
-  nextTick(() => {
-    const element = document.getElementById(`FindingText-${goCount.value}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  });
-};
-
-const fakePageHtml = ref("");
-
-function returnfake() {
-  html.value = (realpage.value?.innerHTML || "") as string;
-  let x = html.value.includes(searchText.value);
-  if (!x) {
-    return "找不到" + searchText.value
-  } else {
-    count.value = 0;
-    let buffer = html.value.replace(new RegExp(searchText.value, "g"), () => {
-      count.value++;
-      return `<span class='highlight' id='FindingText-${count.value}'>${searchText.value}</span>`
-    });
-    return buffer
-  }
-}
-
+// 1.母元件宣告
 interface oldinter {
   id: string
   date: string
@@ -131,10 +85,15 @@ const props = defineProps<{
   datax: oldinter;
 }>()
 
-const newinterpretationdata = ref();
+
+//2.初始與變化載入
+
 const rawContent = ref("")
 const lawvec = ref<Law[]>([]);
 const intervec2 = ref<Number[]>([]);
+const ReasonHtml = ref<string | null>(null);
+
+
 
 
 onMounted(() => {
@@ -146,6 +105,11 @@ onMounted(() => {
   if (props.datax.content) {
     rawContent.value = convertToHTML(props.datax.content);
   }
+
+  if (props.datax.reasoning) {
+    ReasonHtml.value = convertToHTML(props.datax.reasoning);
+  }
+
 
   if (props.datax.reflawid) {
     let set = new Set(props.datax.reflawid);
@@ -193,6 +157,8 @@ watch(
     if (data.refinter) {
       let v = data.refinter as string[];
       intervec2.value = v.map(item => parseInt(item)).filter(num => num < 1000).sort();
+      let set = new Set(intervec2.value);
+      intervec2.value = Array.from(set);
 
     }
 
@@ -204,8 +170,97 @@ function convertToHTML(text: string): string {
   return text
     .split(/。{1,}\n/) // 兩個以上換行視為一個段落
     .map(p => `<p>${p.replace(/\n/g, '')}</p>`)  // 保留段落內的換行
+    .map(par => {
+      if (props.datax.refinter) {
+        props.datax.refinter.forEach(internum => {
+          const replacement = `<span class="spanoldinter" data-oldintername="${internum}">第${internum}號</span>`
+          const findingtext = `第${internum}號`
+          par = par.replace(new RegExp(findingtext, "g"), replacement);
+        })
+      }
+      return par
+    })
+    .map(par => {
+      if (props.datax.reflaws) {
+        props.datax.reflaws.filter(item => item !== "刑法").forEach(lawname => {
+          const replacement = `<span class="spanlawname" data-lawname="${lawname}">${lawname}</span>`
+          par = par.replace(new RegExp(lawname, "g"), replacement);
+        })
+      }
+      return par
+    })
+
     .join('');
 }
+
+
+//3.處理搜索文字
+const chaptervec = ["Date", "Trouble", "Reason", "Content"];
+const searchText = ref("");
+const realpage = ref<HTMLElement | null>(null)
+const count = ref(0);
+const goCount = ref(0);
+const html = ref('');
+const TheSearchingText = ref('');
+const fakePageHtml = ref("");
+
+
+const handleclicklaw = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (target.classList.contains('spanlawname')) {
+    const id = target.dataset.lawname;
+    if (id) {
+      ui.goToLawPage(id);
+    }
+  } else if (target.classList.contains('spanoldinter')) {
+    const id = target.dataset.oldintername;
+    if (id) {
+      ui.goToOldInter(id);
+    }
+  }
+}
+
+
+const searching = () => {
+  searchText.value = TheSearchingText.value;
+  count.value = 0;
+  fakePageHtml.value = returnfake();
+}
+
+function returnfake() {
+  html.value = (realpage.value?.innerHTML || "") as string;
+  let x = html.value.includes(searchText.value);
+  if (!x) {
+    return "找不到" + searchText.value
+  } else {
+    count.value = 0;
+    let buffer = html.value.replace(new RegExp(searchText.value, "g"), () => {
+      count.value++;
+      return `<span class='highlight' id='FindingText-${count.value}'>${searchText.value}</span>`
+    });
+    return buffer
+  }
+}
+
+// 4.處理法律文字搜索
+const ui = useUiStore();
+const handleClick = () => {
+  if (goCount.value === count.value) {
+    goCount.value = 0;
+  } else {
+    goCount.value += 1;
+  }
+  // 更新完成後手動設定 hash（或依需求處理）
+  nextTick(() => {
+    const element = document.getElementById(`FindingText-${goCount.value}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+};
+
+
+
 
 
 </script>

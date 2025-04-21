@@ -336,3 +336,14 @@ a {
 li:hover {
   cursor: pointer;
 }
+
+span[data-lawname]:hover,
+span[data-oldintername]:hover {
+  color: darkorange !important;
+  cursor: pointer;
+}
+
+span[data-lawname],
+span[data-oldintername] {
+  text-decoration: underline;
+}

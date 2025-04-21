@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref, onMounted, computed } from 'vue'
+import { defineProps, ref, onMounted, computed, watch } from 'vue'
 // @ts-expect-error
 import { RecycleScroller } from 'vue3-virtual-scroller'
 import 'vue3-virtual-scroller/dist/vue3-virtual-scroller.css'
@@ -31,6 +31,16 @@ onMounted(async () => {
     history.value = JSON.parse(raw);
   }
 })
+
+import { useUiStore } from '../store/page.ts'
+const ui = useUiStore()
+
+watch(
+  () => ui.searchItem,
+  (item) => {
+    getlawsource(item);
+  }
+)
 
 onMounted(async () => {
   othersourcelist.value = [];
@@ -341,7 +351,7 @@ const showlist = ref(false);
 .sourrcetypelist {
   list-style: none;
   position: relative;
-  z-index: 10;
+  z-index: 1000;
   margin: 0px;
   width: 100px;
   padding: 0px;
@@ -400,9 +410,8 @@ const showlist = ref(false);
 }
 
 .item:hover {
-  background-color: white;
-  color: black;
-  padding: 5px;
+  color: darkorange;
+  cursor: pointer;
 }
 
 
@@ -413,17 +422,26 @@ const showlist = ref(false);
 }
 
 .item {
-  display: flex;
+  display: grid;
   align-items: center;
   text-align: center;
-  gap: 25px;
+  gap: 15px;
+  grid-template-columns: 2fr 8fr;
 }
 
 .sourcetag {
   display: flex;
   gap: 5px;
   align-items: center;
+  align-content: center;
+  justify-content: center;
 }
+
+.sourcetag p {
+  margin: 0px;
+  font-size: 14px;
+}
+
 
 
 #search-type {
@@ -459,6 +477,10 @@ const showlist = ref(false);
 
 input:focus {
   border: none;
+}
+
+.itemname {
+  text-align: left;
 }
 
 
