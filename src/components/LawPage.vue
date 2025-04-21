@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import AllLines from "./LawPageCon/AllLines.vue"
 import Text from "./LawPageCon/Text.vue"
 import Chapter from "./LawPageCon/Chapter.vue"
+import Num from "./LawPageCon/Num.vue"
 import type { Law, LawList, ChapterUl } from '../types/Law.ts'
 import { get_all_lawList, getChapterList, load_chapter_datalist } from '../types/Law.ts'
 
@@ -29,7 +30,7 @@ const HandlePage = function (page: string) {
 }
 
 
-const pagelist = ["All", "Chapter", "Text"]
+const pagelist = ["All", "Chapter", "Text", "Num"]
 
 
 
@@ -44,8 +45,9 @@ const pagelist = ["All", "Chapter", "Text"]
       </li>
     </ul>
     <AllLines v-show="NowPage === 'All'" :chapter="chapter" :LawLists="data" :UlLists="chapterlist" />
-    <Chapter v-show="NowPage === 'Chapter'" :chapter="chapter" :ChapterOption="chapterOption" />
+    <Chapter v-show="NowPage === 'Chapter'" :chapter="chapter" :ChapterOption="chapterOption" :ullist="chapterlist" />
     <Text v-show="NowPage === 'Text'" :LawLists="data" />
+    <Num v-show="NowPage === 'Num'" :chpater="chapter" />
   </div>
 </template>
 
@@ -134,4 +136,6 @@ const pagelist = ["All", "Chapter", "Text"]
   }
 
 }
+
+#test-area {}
 </style>

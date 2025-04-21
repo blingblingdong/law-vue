@@ -328,3 +328,11 @@ h1 {
   margin-left: 3em;
   text-indent: -2em;
 }
+
+a {
+  text-decoration: none;
+}
+
+li:hover {
+  cursor: pointer;
+}

@@ -98,7 +98,8 @@ const showsidebar = ref(true);
 
 <style scoped>
 #realbody {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 19fr;
   gap: 10px;
 }
 
@@ -107,10 +108,10 @@ const showsidebar = ref(true);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 20px;
   align-items: center;
   position: sticky;
   top: 5%;
+  margin-top: 40px;
 }
 
 #bars {
