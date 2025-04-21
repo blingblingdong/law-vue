@@ -71,13 +71,13 @@ const showsidebar = ref(true);
 </script>
 
 <template>
+
   <div id="realbody">
 
 
-    <i class="fa-solid fa-bars" id="bars" @click="showsidebar = true" v-show="!showsidebar"></i>
 
-    <div v-show="showsidebar">
-      <div id="thesidebar">
+    <div>
+      <div id="thesidebar" v-show="showsidebar">
         <img src='/訪客貓.png' id='user-png' class='user-btn catpng'>
         <div id="pagelist">
           <i class="fa-solid fa-magnifying-glass" @click="nowPage = '查詢'" :style="{ color: activecolor('查詢') }"></i>
@@ -94,12 +94,16 @@ const showsidebar = ref(true);
       <GalleryPage v-show="nowPage === '畫廊'" :TheUrl="urltogallery" />
     </div>
   </div>
+
+
+  <i class="fa-solid fa-bars" id="bars" @click="showsidebar = true" v-show="!showsidebar"></i>
+
 </template>
 
 <style scoped>
 #realbody {
   display: grid;
-  grid-template-columns: 1fr 19fr;
+  grid-template-columns: 1fr 100fr;
   gap: 10px;
 }
 
