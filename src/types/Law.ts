@@ -74,7 +74,6 @@ export async function get_all_lawList(chapter: string, ApiLink: string): Promise
     }
 
     const data = await response.json() as LawList[];
-    console.log("✅ 回傳資料：", JSON.stringify(data, null, 2));
     // 利用型別斷言將 data 當成 Law
     return data;
   } catch (error) {
@@ -158,4 +157,4 @@ export function to_history_link(chapter: string, num: string): string {
 
   return `https://mojlaw.moj.gov.tw/LawContentExtentHistory.aspx?LSID=${getLawID(chapter)}&LawNo=${num}`
 }
-
+;

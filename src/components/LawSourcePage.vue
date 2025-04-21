@@ -21,6 +21,8 @@ import { getApiUrl } from '../utils/api'
 const pagenum = ref(0)
 const ApiLink = getApiUrl();
 const history = ref<othersourceitem[]>([]);
+const ui = useUiStore()
+
 
 onMounted(async () => {
   const raw = localStorage.getItem("sourcename");
@@ -30,10 +32,13 @@ onMounted(async () => {
   } else {
     history.value = JSON.parse(raw);
   }
+
+  if (ui.searchItem.name !== "") {
+    getlawsource(ui.searchItem)
+  }
 })
 
 import { useUiStore } from '../store/page.ts'
-const ui = useUiStore()
 
 watch(
   () => ui.searchItem,
@@ -423,10 +428,10 @@ const showlist = ref(false);
 
 .item {
   display: grid;
-  align-items: center;
+  justify-content: flex-start;
   text-align: center;
   gap: 15px;
-  grid-template-columns: 2fr 8fr;
+  grid-template-columns: 2fr 7fr;
 }
 
 .sourcetag {
@@ -434,7 +439,6 @@ const showlist = ref(false);
   gap: 5px;
   align-items: center;
   align-content: center;
-  justify-content: center;
 }
 
 .sourcetag p {

@@ -2,7 +2,10 @@
   <div class="law-block" v-if="card">
     <div class="law-block-content-multiple">
       <p class="law-block-chapter-num">
-        <span class="law-block-chapter">{{ card.chapter }}</span>第<span class="law-block-num">{{ card.num }}</span>條
+        <span class="law-block-chapter" @click="ui.goToLawPage(card.chapter)">{{ card.chapter }}</span>
+        第
+        <span class="law-block-num">{{ card.num }}</span>
+        條
         <i class="fas fa-caret-up" v-show="showLines" @click="showLines = false"></i>
         <i class="fas fa-caret-down" v-show="!showLines" @click="showLines = true"></i>
       </p>
@@ -10,6 +13,7 @@
         <p>history</p>
         <p>original</p>
         <p>note</p>
+
       </div>
       <div class='law-block-lines' v-show="showLines">
         <template v-for="line in card.lines">
@@ -34,6 +38,9 @@ import { defineProps, ref, onMounted } from 'vue'
 import type { Attributes, InlineNode, Block, Note, Line, LawCard } from '../../types/Note'
 import InlineNodeTemplate from './InlineNodeTemplate.vue'
 import { to_history_link } from '../../types/Law.ts'
+import { useUiStore } from '../../store/page.ts'
+const ui = useUiStore();
+
 
 
 const showLines = ref(true);
@@ -131,7 +138,7 @@ if (props.block.data) {
 
 .law-block-chapter:hover {
   cursor: pointer;
-  color: red;
+  color: darkorange;
 }
 
 

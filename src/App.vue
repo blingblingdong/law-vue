@@ -11,28 +11,20 @@ import type { UrlGallery } from './types/Folder.ts'
 const ApiUrl = 'https://deploylawweb-production.up.railway.app'
 const dataOption = ref('')
 const sidebar = ref(false);
-const nowPage = ref('查詢');
 const urltogallery = ref<UrlGallery | null>(null)
 import { useUiStore } from './store/page.ts'
 const ui = useUiStore();
-
-watch(
-  () => ui.currentPage,
-  (page) => {
-    nowPage.value = page;
-  }
-)
 
 
 document.addEventListener('keydown', function (event) {
   // 例如，如果用戶按下 Ctrl+D
   if (event.ctrlKey && event.key === 's') {
-    nowPage.value = "查詢";
+    ui.currentPage = "查詢";
     event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
 
     // 在這裡添加更多的動作，如打開自訂對話框等
   } else if (event.ctrlKey && event.key === 'n') {
-    nowPage.value = "資料夾";
+    ui.currentPage = "資料夾";
     event.preventDefault();
   }
 });
@@ -51,7 +43,7 @@ onMounted(async () => {
 let mainli = ref<string[]>(["查詢", "資料夾", "畫廊"]);
 
 const PageHandel = function (li: string) {
-  nowPage.value = li;
+  ui.currentPage = li;
   if (sidebar.value) {
     sidebar.value = false;
   }
@@ -61,9 +53,14 @@ const urlParams = new URLSearchParams(window.location.search);
 const userid = urlParams.get('user');
 const directory = urlParams.get('dir');
 const file_name = urlParams.get('file_name');
+const lawname = urlParams.get('lawname');
+
+if (lawname) {
+  ui.goToLawPage(lawname);
+}
 
 if (userid && directory) {
-  nowPage.value = "畫廊";
+  ui.currentPage = "畫廊";
   urltogallery.value = { directory: directory, user_name: userid, page: 'FirstPage' };
   if (file_name) {
     urltogallery.value = { directory: directory, user_name: userid, file: file_name, page: 'NotePage' };
@@ -72,12 +69,14 @@ if (userid && directory) {
 }
 
 const activecolor = (page: string) => {
-  const color = page === nowPage.value ? 'darkorange' : 'white';
+  const color = page === ui.currentPage ? 'darkorange' : 'white';
   return color
 }
 
 
 const showsidebar = ref(true);
+
+
 </script>
 
 <template>
@@ -90,18 +89,19 @@ const showsidebar = ref(true);
       <div id="thesidebar" v-show="showsidebar">
         <img src='/訪客貓.png' id='user-png' class='user-btn catpng'>
         <div id="pagelist">
-          <i class="fa-solid fa-magnifying-glass" @click="nowPage = '查詢'" :style="{ color: activecolor('查詢') }"></i>
-          <i class="fa-solid fa-folder" @click="nowPage = '資料夾'" :style="{ color: activecolor('資料夾') }"></i>
-          <i class="fa-solid fa-globe" @click="nowPage = '畫廊'" :style="{ color: activecolor('畫廊') }"></i>
+          <i class="fa-solid fa-magnifying-glass" @click="ui.currentPage = '查詢'"
+            :style="{ color: activecolor('查詢') }"></i>
+          <i class="fa-solid fa-folder" @click="ui.currentPage = '資料夾'" :style="{ color: activecolor('資料夾') }"></i>
+          <i class="fa-solid fa-globe" @click="ui.currentPage = '畫廊'" :style="{ color: activecolor('畫廊') }"></i>
           <i class="fa-solid fa-xmark" @click="showsidebar = false"></i>
         </div>
       </div>
     </div>
     <div id="main-content">
       <datalist id="law-name-data" v-html='dataOption'></datalist>
-      <LawSourcePage v-show="nowPage === '查詢'" />
-      <MyFile v-show="nowPage === '資料夾'" />
-      <GalleryPage v-show="nowPage === '畫廊'" :TheUrl="urltogallery" />
+      <LawSourcePage v-show="ui.currentPage === '查詢'" />
+      <MyFile v-show="ui.currentPage === '資料夾'" />
+      <GalleryPage v-show="ui.currentPage === '畫廊'" :TheUrl="urltogallery" />
     </div>
   </div>
 

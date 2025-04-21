@@ -13,7 +13,7 @@ export const useUiStore = defineStore('ui', {
     actionFlag: boolean
     searchItem: othersourceitem
   } => ({
-    currentPage: 'home',
+    currentPage: '查詢',
     actionFlag: false,
     searchItem: {
       id: '',
