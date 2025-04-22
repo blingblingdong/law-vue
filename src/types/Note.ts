@@ -40,6 +40,7 @@ export interface Note {
   directory: string
   file_name: string
   footer: string | null
+  public: boolean
 }
 
 export async function get_every_note(ApiLink: string): Promise<null | Note[]> {

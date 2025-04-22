@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref, onMounted, computed, watch, type Component } from 'vue'
+import { defineProps, ref, onMounted, computed, watch, type Component, markRaw } from 'vue'
 // @ts-expect-error
 import { RecycleScroller } from 'vue3-virtual-scroller'
 import 'vue3-virtual-scroller/dist/vue3-virtual-scroller.css'
@@ -8,6 +8,8 @@ import OldinterpretationBlock from './SourceCon/OldinterpretationBlock.vue'
 import ResolutionBlock from './SourceCon/ResolutionBlock.vue'
 import PrecedentBlock from './SourceCon/PrecedentBlock.vue'
 import LawPage from './LawPage.vue'
+import { get_note, get_note_nav } from '../types/Note.ts'
+import FilePage from './FilePage.vue'
 
 interface WorkingItem {
   item: othersourceitem,
@@ -33,13 +35,20 @@ async function pushworkingitem(pushingitem: othersourceitem) {
 
     let buffer: WorkingItem = {
       item: pushingitem,
-      con: get_style(pushingitem.sourcetype).con,
+      con: markRaw(get_style(pushingitem.sourcetype).con),
       locked: false
     };
     buffer.item = pushingitem;
     //2.1找component 
     if (buffer.item.sourcetype === 'lawname') {
       buffer.data = { chapter: buffer.item.name }
+    } else if (buffer.item.sourcetype === 'note') {
+      const [username, foldername, notename] = buffer.item.id.split("-");
+      const note = await get_note(ApiLink, username, foldername, notename)
+      const notenav = await get_note_nav(ApiLink, buffer.item.id);
+      if (note && notenav) {
+        buffer.data = { theNote: note, theNoteNav: notenav }
+      }
     } else {
       const res = await fetch(`${ApiLink}/${buffer.item.sourcetype}/${buffer.item.id}`);
       const resdata = await res.json();
@@ -142,7 +151,8 @@ let style_vec: OtherLawSourceStyle[] = [
   { sourcetype: "precedent", color: "darkred", name: "判例", con: PrecedentBlock },
   { sourcetype: "resolution", color: "#ff6600", name: "決議", con: ResolutionBlock },
   { sourcetype: "lawname", color: "darkgreen", name: "法條", con: LawPage },
-  { sourcetype: "all", color: "purple", name: "全域!", con: LawPage }
+  { sourcetype: "all", color: "purple", name: "全域!", con: LawPage },
+  { sourcetype: "note", color: "darkgreen", name: "筆記", con: FilePage },
 ];
 
 
@@ -208,14 +218,21 @@ interface othersourceitem {
 
 async function getlawsourcelist(type: string): Promise<othersourceitem[]> {
 
-  try {
-    const res = await fetch(`${ApiLink}/${type}list`);
+  if (type === 'note') {
+    const res = await fetch(`${ApiLink}/${type}list/test_user`);
     const listdata = await res.json() as othersourceitem[];
     return listdata
-  } catch (e) {
-    console.error("載入資料失敗:", e);
-    return []
+  } else {
+    try {
+      const res = await fetch(`${ApiLink}/${type}list`);
+      const listdata = await res.json() as othersourceitem[];
+      return listdata
+    } catch (e) {
+      console.error("載入資料失敗:", e);
+      return []
+    }
   }
+
 };
 
 const nowarea = ref("search");
@@ -229,6 +246,11 @@ const clickitem = async (item: othersourceitem) => {
   showingitem.value = item.name;
 
 }
+
+const closeitem = (item: othersourceitem) => {
+  workingitemlist.value = workingitemlist.value.filter(theitem => theitem.item !== item)
+}
+
 
 const backtosearch = () => {
   nowarea.value = 'search';
@@ -253,10 +275,11 @@ const showlist = ref(false);
 <template>
   <div id="lawsourcepage">
     <div id="tag-area">
-      <div v-for="workingitem in reversedTags" @click="clickitem(workingitem.item)"
-        :class="{ 'onthisitem': workingitem.item.name === showingitem }">
-        {{ workingitem.item.name }}
+      <div v-for="workingitem in reversedTags" :class="{ 'onthisitem': workingitem.item.name === showingitem }">
+        <i class="fa-solid fa-xmark" @click="closeitem(workingitem.item)" v-if="!workingitem.locked"></i>
         <i class="fa-solid fa-lock" v-if="workingitem.locked"></i>
+
+        <span @click="clickitem(workingitem.item)">{{ ' ' + workingitem.item.name }}</span>
       </div>
     </div>
 
@@ -338,23 +361,37 @@ const showlist = ref(false);
 
 
 <style scoped>
+.fa-xmark:hover {
+  color: darkorange;
+}
+
 #tag-area {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   justify-content: flex-start;
+  gap: 2px;
 }
 
 #tag-area div {
   padding: 5px 10px;
   text-align: left;
-  max-height: 40px;
-  overflow-y: auto;
+  white-space: nowrap;
+  overflow-x: auto;
   font-size: 12px;
+  border-radius: 4px;
+  background-color: var(--gray-color)
 }
+
+@media only screen and (max-width: 500px) {
+  #tag-area div {
+    font-size: 10px;
+  }
+
+}
+
 
 #tag-area div:hover {
   cursor: pointer;
-  color: var(--primary-color);
 }
 
 .historyitem:hover {
@@ -511,7 +548,8 @@ input:focus {
 }
 
 .onthisitem {
-  color: darkorange;
+  color: black !important;
+  background-color: white !important;
 }
 
 /* 讓表單內容更居中美觀 */

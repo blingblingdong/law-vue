@@ -40,32 +40,24 @@ onMounted(async () => {
   }
 })
 
-let mainli = ref<string[]>(["查詢", "資料夾", "畫廊"]);
-
-const PageHandel = function (li: string) {
-  ui.currentPage = li;
-  if (sidebar.value) {
-    sidebar.value = false;
-  }
-}
 
 const urlParams = new URLSearchParams(window.location.search);
 const userid = urlParams.get('user');
 const directory = urlParams.get('dir');
 const file_name = urlParams.get('file_name');
 const lawname = urlParams.get('lawname');
+const oldinter = urlParams.get('oldinter')
 
 if (lawname) {
   ui.goToLawPage(lawname);
 }
 
-if (userid && directory) {
-  ui.currentPage = "畫廊";
-  urltogallery.value = { directory: directory, user_name: userid, page: 'FirstPage' };
-  if (file_name) {
-    urltogallery.value = { directory: directory, user_name: userid, file: file_name, page: 'NotePage' };
-  }
+if (userid && directory && file_name) {
+  ui.goToFile(`${userid}-${directory}-${file_name}`)
+}
 
+if (oldinter) {
+  ui.goToOldInter(oldinter);
 }
 
 const activecolor = (page: string) => {

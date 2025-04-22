@@ -56,7 +56,7 @@ const clickNote = async (notename: string) => {
 
 const createNote = async () => {
   let id = user.value + "-" + FolderNow.value + "-" + inputFileName.value;
-  let note: Note = { id: id, user_name: user.value, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value };
+  let note: Note = { id: id, user_name: user.value, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value, public: true };
   await create_note(ApiLink, note);
   await nextTick();
   notelist.value = await get_note_list(ApiLink, user.value, FolderNow.value);

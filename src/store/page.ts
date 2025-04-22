@@ -41,10 +41,21 @@ export const useUiStore = defineStore('ui', {
       this.currentPage = "查詢"
       this.searchItem = {
         id: num,
-        name: `大法官解釋${num}`,
+        name: `釋字${num}`,
         sourcetype: "oldinterpretation",
       }
+    },
+
+    goToFile(id: string) {
+      this.currentPage = "查詢"
+      const [user, foldername, filename] = id.split('-');
+      this.searchItem = {
+        id: id,
+        name: filename,
+        sourcetype: "note",
+      }
     }
+
   }
 })
 
