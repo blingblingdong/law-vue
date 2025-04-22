@@ -1,26 +1,80 @@
 <script setup lang="ts">
-import { defineProps, ref, onMounted, computed, watch } from 'vue'
+import { defineProps, ref, onMounted, computed, watch, type Component } from 'vue'
 // @ts-expect-error
 import { RecycleScroller } from 'vue3-virtual-scroller'
 import 'vue3-virtual-scroller/dist/vue3-virtual-scroller.css'
-import AllLines from "./LawPageCon/AllLines.vue"
 import NewinterpretationBlock from './SourceCon/NewinterpretationBlock.vue'
 import OldinterpretationBlock from './SourceCon/OldinterpretationBlock.vue'
 import ResolutionBlock from './SourceCon/ResolutionBlock.vue'
 import PrecedentBlock from './SourceCon/PrecedentBlock.vue'
 import LawPage from './LawPage.vue'
 
+interface WorkingItem {
+  item: othersourceitem,
+  con: Component,
+  locked: boolean,
+  data?: any
+}
+
+const workingitemlist = ref<WorkingItem[]>([]);
+const showingitem = ref<null | string>(null);
+
+async function pushworkingitem(pushingitem: othersourceitem) {
+  // 1.先找有沒有重複
+  let duplicate_flag = false;
+  workingitemlist.value.forEach(theitem => {
+    if (theitem.item.name === pushingitem.name) {
+      duplicate_flag = true;
+    }
+  })
+
+  //2.如果沒有重複
+  if (!duplicate_flag) {
+
+    let buffer: WorkingItem = {
+      item: pushingitem,
+      con: get_style(pushingitem.sourcetype).con,
+      locked: false
+    };
+    buffer.item = pushingitem;
+    //2.1找component 
+    if (buffer.item.sourcetype === 'lawname') {
+      buffer.data = { chapter: buffer.item.name }
+    } else {
+      const res = await fetch(`${ApiLink}/${buffer.item.sourcetype}/${buffer.item.id}`);
+      const resdata = await res.json();
+      buffer.data = { datax: resdata };
+    }
+
+    workingitemlist.value.push(buffer);
+
+
+    workingitemlist.value = [
+      ...workingitemlist.value.filter(item => !item.locked),
+      ...workingitemlist.value.filter(item => item.locked),
+
+    ]
+
+
+    if (workingitemlist.value.length > 5) {
+      workingitemlist.value.shift() // 移除最前面那個（應是可刪的）
+    }
+
+
+  }
+
+
+}
 
 const search = ref<String | null>(null);
 const searchtype = ref("all");
 const placeholder = ref("");
 const data = ref();
 const othersourcelist = ref<null | othersourceitem[]>(null);
-const displaysourcelist = ref<null | othersourceitem[]>(null);
 import { getApiUrl } from '../utils/api'
-const pagenum = ref(0)
 const ApiLink = getApiUrl();
 const history = ref<othersourceitem[]>([]);
+import { useUiStore } from '../store/page.ts'
 const ui = useUiStore()
 
 
@@ -34,16 +88,15 @@ onMounted(async () => {
   }
 
   if (ui.searchItem.name !== "") {
-    getlawsource(ui.searchItem)
+    clickitem(ui.searchItem)
   }
 })
 
-import { useUiStore } from '../store/page.ts'
 
 watch(
   () => ui.searchItem,
   (item) => {
-    getlawsource(item);
+    clickitem(item);
   }
 )
 
@@ -78,17 +131,18 @@ interface OtherLawSourceStyle {
   sourcetype: string,
   color: string,
   name: string,
+  con: Component,
 }
 
 
 
 let style_vec: OtherLawSourceStyle[] = [
-  { sourcetype: "newinterpretation", color: "darkblue", name: "憲判字" },
-  { sourcetype: "oldinterpretation", color: "#cc6699", name: "舊釋字" },
-  { sourcetype: "precedent", color: "darkred", name: "判例" },
-  { sourcetype: "resolution", color: "#ff6600", name: "決議" },
-  { sourcetype: "lawname", color: "darkgreen", name: "法條" },
-  { sourcetype: "all", color: "purple", name: "全域!" }
+  { sourcetype: "newinterpretation", color: "darkblue", name: "憲判字", con: NewinterpretationBlock },
+  { sourcetype: "oldinterpretation", color: "#cc6699", name: "舊釋字", con: OldinterpretationBlock },
+  { sourcetype: "precedent", color: "darkred", name: "判例", con: PrecedentBlock },
+  { sourcetype: "resolution", color: "#ff6600", name: "決議", con: ResolutionBlock },
+  { sourcetype: "lawname", color: "darkgreen", name: "法條", con: LawPage },
+  { sourcetype: "all", color: "purple", name: "全域!", con: LawPage }
 ];
 
 
@@ -164,45 +218,17 @@ async function getlawsourcelist(type: string): Promise<othersourceitem[]> {
   }
 };
 
-import type { Law, LawList, ChapterUl } from '../types/Law.ts'
-import { get_all_lawList, getChapterList, load_chapter_datalist } from '../types/Law.ts'
-
-
-const realchapter = ref('');
-const lawdata = ref<null | LawList[]>(null);
-const chapterlist = ref<null | ChapterUl[]>(null);
-const nowareatype = ref('');
 const nowarea = ref("search");
-const reasultcomponent = ref<othersourceitem[]>([])
-
-
-const getlawsource = async (item: othersourceitem) => {
+const clickitem = async (item: othersourceitem) => {
   history.value = history.value.filter(historyitem => historyitem.name !== item.name);
   history.value.push(item);
   localStorage.setItem("sourcename", JSON.stringify(history.value))
   nowarea.value = 'result';
-  reasultcomponent.value.push(item)
-  const set = new Set(reasultcomponent.value.reverse().slice(0, 5));
-  reasultcomponent.value = Array.from(set);
-  if (item.sourcetype === "lawname") {
-    realchapter.value = item.name;
-    lawdata.value = await get_all_lawList(realchapter.value, ApiLink);
-    chapterlist.value = await getChapterList(realchapter.value, ApiLink);
-    nowareatype.value = item.sourcetype;
 
-    return
-  }
+  await pushworkingitem(item);
+  showingitem.value = item.name;
 
-  try {
-    const res = await fetch(`${ApiLink}/${item.sourcetype}/${item.id}`);
-    data.value = await res.json();
-  } catch (e) {
-    console.error("載入資料失敗:", e);
-    console.log(`${item.sourcetype}、${item.id}`)
-  }
-  nowareatype.value = item.sourcetype;
-
-};
+}
 
 const backtosearch = () => {
   nowarea.value = 'search';
@@ -213,6 +239,11 @@ const reversedHistory = computed(() => {
   return [...history.value].reverse();
 });
 
+const reversedTags = computed(() => {
+  return [...workingitemlist.value].reverse();
+});
+
+
 const showlist = ref(false);
 
 
@@ -222,7 +253,11 @@ const showlist = ref(false);
 <template>
   <div id="lawsourcepage">
     <div id="tag-area">
-      <div v-for="item in reasultcomponent.slice(0, 5)" @click="getlawsource(item)">{{ item.name }}</div>
+      <div v-for="workingitem in reversedTags" @click="clickitem(workingitem.item)"
+        :class="{ 'onthisitem': workingitem.item.name === showingitem }">
+        {{ workingitem.item.name }}
+        <i class="fa-solid fa-lock" v-if="workingitem.locked"></i>
+      </div>
     </div>
 
 
@@ -249,7 +284,7 @@ const showlist = ref(false);
         <p>history：</p>
         <div id="historylist" v-if="history">
           <template v-if="history">
-            <div v-for="item in reversedHistory" class="historyitem" @click="getlawsource(item)">{{ item.name.trim() }}
+            <div v-for="item in reversedHistory" class="historyitem" @click="clickitem(item)">{{ item.name.trim() }}
             </div>
 
           </template>
@@ -259,7 +294,7 @@ const showlist = ref(false);
       <div id="alloptionlist" v-if="othersourcelist && !search">
         <RecycleScroller :items="othersourcelist" :item-size="50" key-feild="id" class="scroller">
           <template #default="{ item }">
-            <div :sourcetype="item.sourcetype" :id="item.id" @click=" getlawsource(item)" class="item">
+            <div :sourcetype="item.sourcetype" :id="item.id" @click=" clickitem(item)" class="item">
               <div class="sourcetag">
                 <i class="fa-solid fa-circle" :style="{ color: get_style(item.sourcetype).color }"></i>
                 <p>{{ get_style(item.sourcetype).name }}</p>
@@ -272,7 +307,7 @@ const showlist = ref(false);
       <div id="inputoptionlist" v-if="search">
         <RecycleScroller :items="filter_list" :item-size="50" key-feild="id" class="scroller">
           <template #default="{ item }">
-            <div :sourcetype="item.sourcetype" :id="item.id" @click=" getlawsource(item)" class="item">
+            <div :sourcetype="item.sourcetype" :id="item.id" @click=" clickitem(item)" class="item">
               <div class="sourcetag">
                 <i class="fa-solid fa-circle" :style="{ color: get_style(item.sourcetype).color }"></i>
                 <p>{{ get_style(item.sourcetype).name }}</p>
@@ -284,30 +319,17 @@ const showlist = ref(false);
       </div>
     </div>
 
-    <div @click="backtosearch">
-      search again
-    </div>
+
     <div id="result-area" v-if="nowarea === 'result'">
-      <div v-if="nowareatype === 'oldinterpretation'">
-        <OldinterpretationBlock :datax="data" />
+      <div @click="backtosearch">
+        search again
       </div>
-      <div v-if="nowareatype === 'precedent'">
-        <PrecedentBlock :datax="data" />
-      </div>
-      <div v-if="nowareatype === 'resolution'">
-        <ResolutionBlock :datax="data" />
-      </div>
-      <div v-else-if="nowareatype === 'newinterpretation'">
-        <NewinterpretationBlock :datax="data" />
-      </div>
-      <div id="lawnameresult" v-else-if="nowareatype === 'lawname'">
-        <LawPage :chapter="realchapter" />
+      <div v-for="(w, i) in workingitemlist" v-show="showingitem && w.item.name === showingitem">
+        <div @click="w.locked = true" v-if="w.locked == false">lock</div>
+        <div @click="w.locked = false" v-if="w.locked == true">unlock</div>
+        <component :key="i" :is="w.con" v-bind="w.data" />
       </div>
     </div>
-
-
-
-
 
   </div>
 
@@ -324,9 +346,10 @@ const showlist = ref(false);
 
 #tag-area div {
   padding: 5px 10px;
-  text-align: center;
-  max-height: 20px;
+  text-align: left;
+  max-height: 40px;
   overflow-y: auto;
+  font-size: 12px;
 }
 
 #tag-area div:hover {
@@ -487,6 +510,9 @@ input:focus {
   text-align: left;
 }
 
+.onthisitem {
+  color: darkorange;
+}
 
 /* 讓表單內容更居中美觀 */
 </style>
