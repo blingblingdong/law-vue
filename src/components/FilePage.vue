@@ -1,19 +1,35 @@
 <template v-if="localNote">
-  <div id="TheHam">
-    <i class="fa-solid fa-pencil" @click="enableEditor"></i>
-    <i class="fa-solid fa-arrow-pointer" @click="saveNote"></i>
-    <i class="fa-solid fa-bars" @click="sidebar = true"></i>
+  <div v-if="account.username === localNote.user_name">
+    <p class="save-or-edit" v-if="IntoEditor" @click="saveNote">save</p>
+    <p class="save-or-edit" v-if="!IntoEditor" @click="enableEditor">edit</p>
   </div>
   <div id="TheNavHam">
-    <i class="fa-solid fa-pencil" @click="enableEditor"></i>
-    <i class="fa-solid fa-arrow-pointer" @click="saveNote"></i>
     <i class="fa-solid fa-bars" @click="IsShowNav = true" v-show="!IsShowNav"></i>
   </div>
   <div id="publicFileHeader">
     <div id="publicFiletitle">
-      <div id="publicFileName">{{ localNote.file_name }}</div>
+      <div id="publicFileName">
+        <template v-if="!changing_name">
+          <span>{{ localNote.file_name }}</span>
+          <i class="fa-solid fa-pen" @click="changing_name = true" v-if="account.username === localNote.user_name"></i>
+        </template>
+        <template v-else>
+          <input v-model="changingnewname"></input>
+          <i class="fa-solid fa-check" @click="change_name(changingnewname)"></i>
+          <i class="fa-solid fa-xmark" @click="changing_name = false"></i>
+        </template>
+      </div>
       <div id="publicFileWriter">write by: {{ localNote.user_name }}</div>
       <div>Last Edit</div>
+      <div>State：
+        <span v-if="localNote.public">released
+          <i class="fa-regular fa-circle-check" @click="change_state"
+            v-if="account.username === localNote.user_name"></i>
+        </span>
+        <span v-else>private
+          <i class="fa-regular fa-circle" v-if="account.username === localNote.user_name" @click="change_state"></i>
+        </span>
+      </div>
     </div>
     <div>
       <nav class='sidebar' v-show="sidebar">
@@ -32,6 +48,21 @@
       </nav>
     </div>
   </div>
+  <div id="content-table">
+    <p>table of content</p>
+    <template v-if="localNoteNav" v-for="nav in localNoteNav">
+      <ul v-if="nav.text !== ''" :id="nav.id" class="publicFileNavUl" @mouseenter="showli = nav.id"
+        @mouseleave="showli = ''">
+        <span :class="{ inul: IsInUl(nav.id), scrollh2: IsScroll(nav.text) }"><a @click.prevent="clickNav(nav.id)">{{
+          nav.text }}</a></span>
+        <template v-if="nav.children" v-for="li in nav.children">
+          <li v-show="showli === nav.id" class="publicFileNavLi">
+            <a @click.prevent="clickNav(li.id)">{{ li.text }}</a>
+          </li>
+        </template>
+      </ul>
+    </template>
+  </div>
   <div id="publicContentAndNav">
     <div ref="fileDiv" id="fileContentArea" v-if="searchText === '' && !IntoEditor"
       class="ck-content ck-editor__editable ck">
@@ -44,7 +75,7 @@
       <div v-html="fakePageHtml()"></div>
     </div>
     <div v-show="IntoEditor">
-      <div id="ppp" />
+      <div ref="editorMountPoint" />
     </div>
     <div id="publicFileNavArea" :class="{ mustShow: showNav }" v-show="IsShowNav">
       <div id="publicFileNav">
@@ -80,7 +111,7 @@
 <script lang="ts" setup>
 import { defineProps, onMounted, ref, nextTick, onUnmounted, watch } from 'vue'
 import type { Note, H2Nav, } from '../types/Note'
-import { get_note_nav, update_note } from '../types/Note'
+import { get_note_nav, update_note, update_note_name, update_note_state } from '../types/Note'
 import ParagraphBlock from './BlockCon/ParagraphBlock.vue'
 import CustomCardBlock from './BlockCon/CustomCardBlock.vue'
 import BlockQuoteBlock from './BlockCon/BlockQuoteBlock.vue'
@@ -96,8 +127,14 @@ const sidebar = ref<boolean>(false);
 import { ClassicEditor, Editor } from 'ckeditor5';
 import type { EditorConfig } from 'ckeditor5';
 import { editorConfig } from '../types/ck'
-
+import { useAccountStore } from '../store/page.ts'
 import { getApiUrl } from '../utils/api.ts'
+
+const account = useAccountStore();
+
+
+
+
 
 const ApiLink = getApiUrl();
 const fileDiv = ref<HTMLElement | null>(null)
@@ -176,12 +213,16 @@ const handleWindowScroll = () => {
   }
 };
 
+
+const editorMountPoint = ref<HTMLElement | null>(null)
+
 onMounted(() => {
+
   window.addEventListener('scroll', handleWindowScroll);
   // 初次載入時也計算一次
   handleWindowScroll();
-  const editorElement = document.querySelector('#ppp') as HTMLElement
-  ClassicEditor.create(editorElement, editorConfig as EditorConfig)
+  if (!editorMountPoint.value) return
+  ClassicEditor.create(editorMountPoint.value, editorConfig as EditorConfig)
     .then(editor => {
       editorInstance.value = editor
       // 為 clipboardInput 事件加上處理器，將剪貼簿內容以純文字插入
@@ -294,10 +335,35 @@ const IsScroll = function (id: string) {
 }
 
 
+const changingnewname = ref('');
+const changing_name = ref(false);
+const change_name = async (newname: string) => {
+  changing_name.value = true;
+  let res = await update_note_name(ApiLink, localNote.value.id, newname);
+  await nextTick();
+  if (res) {
+    localNote.value = res;
+  } else {
+    alert("換名失敗！")
+  }
+  changing_name.value = false;
+}
 
+const change_state = async () => {
+  let state = localNote.value.public ? "false" : "true";
+  let res = await update_note_state(ApiLink, localNote.value.id, state);
+  await nextTick();
+  res ? localNote.value.public = !localNote.value.public : alert("切換失敗");
+}
 </script>
 
 <style scoped>
+#content-table {
+  margin-top: 20px;
+  display: none;
+}
+
+
 #searchbytextbtn {
   display: flex;
   justify-content: flex-start;
@@ -345,6 +411,7 @@ input {
   padding-left: 0px;
   position: sticky;
   top: 10%;
+  overflow-y: auto;
 }
 
 .publicFileNavUl {
@@ -397,7 +464,7 @@ input {
 }
 
 a {
-  color: white;
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -405,6 +472,8 @@ a {
   font-size: 2rem;
   margin: 10px 0px;
   font-weight: 900;
+  display: flex;
+  align-items: center;
 }
 
 #publicFileWriter {
@@ -415,7 +484,6 @@ a {
 #publicFileHeader {
   display: flex;
   align-items: center;
-  margin-top: 50px;
 }
 
 #sharePage,
@@ -449,6 +517,10 @@ i {
 
 
 @media only screen and (max-width: 600px) {
+  #content-table {
+    display: block;
+  }
+
   #publicFileNavArea {
     display: none;
   }
@@ -458,21 +530,12 @@ i {
     position: fixed;
   }
 
-  #TheHam {
-    display: flex !important;
-    position: sticky;
-    align-items: flex-end;
-    justify-items: flex-end;
-    justify-content: flex-end;
-  }
 
   .fa-bars::before {
     margin-right: 30px;
+    display: none;
   }
 
-  #TheNavHam {
-    display: none !important;
-  }
 }
 
 .sidebar {
@@ -491,11 +554,6 @@ i {
   margin-left: 10px;
 }
 
-#TheHam {
-  display: none;
-  top: 11%;
-  right: 100% !important;
-}
 
 #TheNavHam {
   z-index: 999;
@@ -507,7 +565,25 @@ i {
   align-items: flex-end;
   justify-items: flex-end;
   justify-content: flex-end;
-  top: 11%;
-  right: 100% !important;
+  top: 5%;
+  right: 95% !important;
+}
+
+.save-or-edit {
+  position: fixed;
+  bottom: 0%;
+  right: 50%;
+  border: 1px solid var(--text-color);
+  padding: 5px;
+  border-radius: 4px;
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  z-index: 999;
+}
+
+.save-or-edit:hover {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  cursor: pointer;
 }
 </style>

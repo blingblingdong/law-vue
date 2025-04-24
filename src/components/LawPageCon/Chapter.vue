@@ -172,7 +172,7 @@ const showlawlist = ref(true);
 }
 
 a {
-  color: white;
+  color: var(--text-color);
   text-decoration: none;
   font-size: 20px;
 }
@@ -197,7 +197,7 @@ ul {
 }
 
 .lititle p:hover {
-  color: darkorange;
+  color: var(--primary-color);
   cursor: pointer;
 }
 

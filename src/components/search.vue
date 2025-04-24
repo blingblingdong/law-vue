@@ -68,7 +68,7 @@ const fastSearch = async (event: Event) => {
   left: -2.5em;
   margin-left: -1em;
   text-align: right;
-  color: white;
+  color: var(--text-color);
 }
 
 .law-block-line {
@@ -213,11 +213,11 @@ const fastSearch = async (event: Event) => {
 #chapter-input-wrapper a::before {
   content: "";
   transform: rotate(45deg);
-  border-top: 3px solid white;
+  border-top: 3px solid var(--text-color);
   margin-right: 10px;
   height: 8px;
   width: 8px;
-  border-right: 3px solid white;
+  border-right: 3px solid var(--text-color);
 }
 
 
@@ -227,7 +227,7 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s;
-  -webkit-text-fill-color: white !important;
+  -webkit-text-fill-color: var(--text-color) !important;
   background-color: black !important;
   box-shadow: 0 0 0px 1000px black inset !important;
 }
@@ -255,7 +255,7 @@ input:-webkit-autofill:active {
   transform: translateY(-50%);
   height: 80px;
   width: 80px;
-  border: 2px solid darkorange;
+  border: 2px solid var(--primary-color);
   border-radius: 50%;
 }
 </style>

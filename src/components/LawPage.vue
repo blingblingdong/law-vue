@@ -71,7 +71,7 @@ const pagelist = ["All", "Chapter", "Text", "Num"]
 
 .law-search-area-form-send {
   background-color: black;
-  color: white !important;
+  color: var(--text-color) !important;
   font-size: 30px;
 }
 
@@ -82,7 +82,7 @@ const pagelist = ["All", "Chapter", "Text", "Num"]
   left: 0;
   width: 70px;
   height: 5px;
-  background-color: darkorange;
+  background-color: var(--primary-color);
 }
 
 #law-search-area-form input {
@@ -100,14 +100,14 @@ const pagelist = ["All", "Chapter", "Text", "Num"]
 
 #law-search-area-form button {
   background-color: black;
-  border: 1px solid white;
-  color: white;
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
   border-radius: 15px;
   padding: 8px 15px;
 }
 
 #law-search-area-form button:hover {
-  background-color: white;
+  background-color: var(--text-color);
   color: black;
 }
 

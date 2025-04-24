@@ -122,6 +122,38 @@ export async function get_note_nav(ApiLink: string, id: string): Promise<null | 
   }
 }
 
+export async function update_note_state(ApiLink: string, id: string, state: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${ApiLink}/note_state/${id}/${state}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    } else {
+      return true
+    }
+
+  } catch (error) {
+    console.error('Failed to load note:', error)
+    return false
+  }
+}
+
+export async function update_note_name(ApiLink: string, oldid: string, newname: string): Promise<Note | null> {
+  try {
+    const response = await fetch(`${ApiLink}/note_name/${oldid}/${newname}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json();
+    return data as Note
+
+  } catch (error) {
+    console.error('Failed to load note:', error)
+    return null
+  }
+}
+
+
+
 export async function update_note(ApiLink: string, id: string, content: string): Promise<null | Note> {
   try {
     let c = { content: content }

@@ -66,7 +66,7 @@ if (props.block.data) {
 }
 
 .tool-bar p {
-  color: white;
+  color: var(--text-color);
   margin: 0px;
   border: none;
   background-color: var(--gray-color);
@@ -83,7 +83,7 @@ if (props.block.data) {
   margin-right: 0.5rem;
   margin-left: -1em;
   text-align: right;
-  color: white;
+  color: var(--text-color);
 }
 
 .law-block-line {
@@ -105,7 +105,7 @@ if (props.block.data) {
 
 
 .law-block {
-  color: white;
+  color: var(--text-color);
   border-left: 4px solid var(--accent-color);
   margin: 10px;
   background-color: var(--gray-color);
@@ -114,8 +114,8 @@ if (props.block.data) {
 }
 
 .multiple-block {
-  color: white;
-  border: 1px solid white;
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
   margin: 10px;
 }
 
@@ -126,7 +126,7 @@ if (props.block.data) {
 
 
 .law-block-content-multiple {
-  border-bottom: 0px solid white;
+  border-bottom: 0px solid var(--text-color);
   margin-top: 15px;
   margin-left: 10px;
   margin-right: 5px;
@@ -138,7 +138,7 @@ if (props.block.data) {
 
 .law-block-chapter:hover {
   cursor: pointer;
-  color: darkorange;
+  color: var(--primary-color);
 }
 
 

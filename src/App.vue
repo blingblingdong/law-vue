@@ -7,12 +7,14 @@ import GalleryPage from './components/GalleryPage.vue'
 import LawSourcePage from './components/LawSourcePage.vue'
 import { ref, onMounted, watch } from 'vue'
 import type { UrlGallery } from './types/Folder.ts'
+import Account from './Account.vue'
 
 const ApiUrl = 'https://deploylawweb-production.up.railway.app'
 const dataOption = ref('')
 const sidebar = ref(false);
 const urltogallery = ref<UrlGallery | null>(null)
-import { useUiStore } from './store/page.ts'
+import { useUiStore, useAccountStore } from './store/page.ts'
+import { nextTick } from 'vue'
 const ui = useUiStore();
 
 
@@ -38,7 +40,28 @@ onMounted(async () => {
   } catch (error) {
     console.error('API 請求失敗：', error)
   }
+
 })
+
+let account = useAccountStore();
+
+
+onMounted(async () => {
+  // 1.先看看localstorage，用戶有無登入過
+  let user = localStorage.getItem("username");
+  let email = localStorage.getItem("email");
+  if (user && email) {
+    //1.尋找令牌
+    account.username = user;
+    account.email = email;
+    await account.find_token(ApiUrl);
+    await nextTick();
+    if (!account.loginflag) {
+      ui.currentPage = "用戶"
+    }
+  }
+})
+
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -61,12 +84,20 @@ if (oldinter) {
 }
 
 const activecolor = (page: string) => {
-  const color = page === ui.currentPage ? 'darkorange' : 'white';
+  const color = page === ui.currentPage ? 'var(--primary-color)' : 'var(--text-color)';
   return color
 }
 
 
 const showsidebar = ref(true);
+
+const picture = () => {
+  if (account.loginflag) {
+    return `/${account.picture}.png`
+  } else {
+    return `/dog訪客.png`
+  }
+}
 
 
 </script>
@@ -74,12 +105,9 @@ const showsidebar = ref(true);
 <template>
 
   <div id="realbody">
-
-
-
     <div>
       <div id="thesidebar" v-show="showsidebar">
-        <img src='/訪客貓.png' id='user-png' class='user-btn catpng'>
+        <img :src="picture()" id='user-png' class='user-btn catpng' @click="ui.currentPage = '用戶'">
         <div id="pagelist">
           <i class="fa-solid fa-magnifying-glass" @click="ui.currentPage = '查詢'"
             :style="{ color: activecolor('查詢') }"></i>
@@ -93,6 +121,7 @@ const showsidebar = ref(true);
       <datalist id="law-name-data" v-html='dataOption'></datalist>
       <LawSourcePage v-show="ui.currentPage === '查詢'" />
       <MyFile v-show="ui.currentPage === '資料夾'" />
+      <Account v-show="ui.currentPage === '用戶'" />
       <GalleryPage v-show="ui.currentPage === '畫廊'" :TheUrl="urltogallery" />
     </div>
   </div>
@@ -132,7 +161,7 @@ const showsidebar = ref(true);
   right: 0px;
   font-size: 30px;
   background-color: black;
-  color: white;
+  color: var(--text-color);
   border: none;
 }
 
@@ -153,7 +182,7 @@ const showsidebar = ref(true);
 #app,
 body {
   background-color: black !important;
-  color: white !important;
+  color: var(--text-color) !important;
 }
 
 .header-container {
@@ -177,7 +206,7 @@ option {
 
 .header-title {
   font-size: 25px;
-  color: darkorange;
+  color: var(--primary-color);
   text-align: center;
   font-family: "Playwrite DE Grund", cursive;
 }
@@ -207,14 +236,14 @@ option {
 
 .main-li a {
   display: flex;
-  color: white;
+  color: var(--text-color);
   text-align: center;
   font-size: 18px;
   text-decoration: none;
 }
 
 .navbar a:hover {
-  color: darkorange;
+  color: var(--primary-color);
   cursor: pointer;
 }
 

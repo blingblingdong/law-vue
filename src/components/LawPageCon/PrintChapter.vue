@@ -44,7 +44,7 @@ const enterli4 = ref('');
 
 <style scoped>
 a {
-  color: white;
+  color: var(--text-color);
   text-decoration: none;
 }
 

@@ -36,7 +36,7 @@ const props = defineProps<{
   margin-right: 0.5rem;
   margin-left: -1em;
   text-align: right;
-  color: white;
+  color: var(--text-color);
 }
 
 .law-block-line {

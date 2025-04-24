@@ -74,7 +74,7 @@
 
 
 #public-file-list-ul li:hover {
-  background-color: white;
+  background-color: var(--text-color);
   color: black;
 
 }
@@ -134,7 +134,7 @@
 #folder-information-title {
   font-weight: 1000;
   font-size: 2rem;
-  color: darkorange;
+  color: var(--primary-color);
 }
 
 
@@ -180,7 +180,7 @@
   margin-left: 60px;
   width: 97%;
   height: 0.5px;
-  background-color: white;
+  background-color: var(--text-color);
   /* 設置底線顏色 */
 }
 </style>

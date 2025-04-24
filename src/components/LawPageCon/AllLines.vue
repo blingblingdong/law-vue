@@ -133,7 +133,7 @@ const showchapter = (l: Law) => {
   margin-right: 0.5rem;
   margin-left: -1em;
   text-align: right;
-  color: white;
+  color: var(--text-color);
 }
 
 .law-block-line {
@@ -206,16 +206,16 @@ input {
 }
 
 .searchingNum {
-  color: darkorange;
+  color: var(--primary-color);
 }
 
 .searchingChapter {
-  color: darkorange;
+  color: var(--primary-color);
 }
 
 a {
   text-decoration: none;
-  color: white;
+  color: var(--text-color);
 }
 
 .lawToolBar {

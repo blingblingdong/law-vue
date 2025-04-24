@@ -205,7 +205,13 @@ function isinclude(sourcetype: string) {
         return item.name.includes(val);
       })
         ;
+    } else if (sourcetype === "note" && othersourcelist.value) {
+      filter_list.value = othersourcelist.value.filter(item => {
+        return item.name.includes(val);
+      })
+        ;
     }
+
   }
 
 }
@@ -344,12 +350,12 @@ const showlist = ref(false);
 
 
     <div id="result-area" v-if="nowarea === 'result'">
-      <div @click="backtosearch">
-        search again
-      </div>
       <div v-for="(w, i) in workingitemlist" v-show="showingitem && w.item.name === showingitem">
-        <div @click="w.locked = true" v-if="w.locked == false">lock</div>
-        <div @click="w.locked = false" v-if="w.locked == true">unlock</div>
+        <div id="backtosearch">
+          <i class="fa-solid fa-arrow-left" @click="backtosearch"></i>
+          <i class="fa-solid fa-lock" @click="w.locked = false" v-if="w.locked == true"></i>
+          <i class="fa-solid fa-lock-open" @click="w.locked = true" v-if="w.locked == false"></i>
+        </div>
         <component :key="i" :is="w.con" v-bind="w.data" />
       </div>
     </div>
@@ -361,15 +367,27 @@ const showlist = ref(false);
 
 
 <style scoped>
-.fa-xmark:hover {
-  color: darkorange;
+#backtosearch {
+  position: sticky;
+  top: 5%;
+  gap: 10px;
+  display: flex;
+  font-size: 20px;
 }
+
+#backtosearch i:hover {
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
 
 #tag-area {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   justify-content: flex-start;
   gap: 2px;
+  position: sticky;
+  top: 0%;
 }
 
 #tag-area div {
@@ -395,7 +413,7 @@ const showlist = ref(false);
 }
 
 .historyitem:hover {
-  color: darkorange;
+  color: var(--primary-color);
   cursor: pointer;
 }
 
@@ -441,7 +459,7 @@ const showlist = ref(false);
 
 #dropdown li:hover {
   cursor: pointer;
-  background-color: white;
+  background-color: var(--text-color);
   color: black;
 }
 
@@ -475,7 +493,7 @@ const showlist = ref(false);
 }
 
 .item:hover {
-  color: darkorange;
+  color: var(--primary-color);
   cursor: pointer;
 }
 
@@ -520,10 +538,13 @@ const showlist = ref(false);
   gap: 10px;
   align-items: center;
   justify-content: center;
-  background-color: black;
+  background-color: var(--gray-color);
   border-radius: 10px;
-  border: 1px solid white;
 
+}
+
+#inputRow p {
+  font-size: 14px;
 }
 
 #showsearchtype {
@@ -534,7 +555,6 @@ const showlist = ref(false);
   padding: 15px;
   flex-shrink: 0;
   width: 70%;
-  background-color: black;
   border: none;
 
 }
@@ -549,7 +569,7 @@ input:focus {
 
 .onthisitem {
   color: black !important;
-  background-color: white !important;
+  background-color: var(--text-color) !important;
 }
 
 /* 讓表單內容更居中美觀 */

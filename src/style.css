@@ -13,15 +13,15 @@
 
 .highlight {
   font-weight: bold;
-  color: darkorange;
+  color: var(--primary-color);
 }
 
 body,
 html {
   margin: 0;
-  background-color: black !important;
+  background-color: var(--bg-color) !important;
   font-family: "Playwrite DE Grund", cursive;
-  color: white !important;
+  color: var(--text-color) !important;
 
 }
 
@@ -96,20 +96,7 @@ h1 {
 }
 
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
 
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
-}
 
 
 #app {
@@ -248,11 +235,11 @@ h1 {
   line-height: 1.6;
   word-break: break-word;
   background-color: black !important;
-  color: white;
+  color: var(--text-color);
 }
 
 .law-block {
-  color: white;
+  color: var(--text-color);
   border-left: 4px solid var(--accent-color);
   margin: 10px;
   background-color: var(--gray-color);
@@ -261,8 +248,8 @@ h1 {
 }
 
 .multiple-block {
-  color: white;
-  border: 1px solid white;
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
   margin: 10px;
 }
 
@@ -273,7 +260,7 @@ h1 {
 
 
 .law-block-content-multiple {
-  border-bottom: 0px solid white;
+  border-bottom: 0px solid var(--text-color);
   margin-top: 15px;
   margin-left: 10px;
   margin-right: 5px;
@@ -339,11 +326,16 @@ li:hover {
 
 span[data-lawname]:hover,
 span[data-oldintername]:hover {
-  color: darkorange !important;
+  color: var(--primary-color) !important;
   cursor: pointer;
 }
 
 span[data-lawname],
 span[data-oldintername] {
   text-decoration: underline;
+}
+
+i:hover {
+  cursor: pointer;
+  color: var(--primary-color);
 }
