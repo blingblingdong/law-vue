@@ -10,6 +10,7 @@ import PrecedentBlock from './SourceCon/PrecedentBlock.vue'
 import LawPage from './LawPage.vue'
 import { get_note, get_note_nav } from '../types/Note.ts'
 import FilePage from './FilePage.vue'
+import swal from 'sweetalert'
 
 interface WorkingItem {
   item: othersourceitem,
@@ -21,7 +22,8 @@ interface WorkingItem {
 const workingitemlist = ref<WorkingItem[]>([]);
 const showingitem = ref<null | string>(null);
 
-async function pushworkingitem(pushingitem: othersourceitem) {
+async function pushworkingitem(pushingitem: othersourceitem): Promise<boolean> {
+
   // 1.先找有沒有重複
   let duplicate_flag = false;
   workingitemlist.value.forEach(theitem => {
@@ -33,30 +35,13 @@ async function pushworkingitem(pushingitem: othersourceitem) {
   //2.如果沒有重複
   if (!duplicate_flag) {
 
-    let buffer: WorkingItem = {
-      item: pushingitem,
-      con: markRaw(get_style(pushingitem.sourcetype).con),
-      locked: false
-    };
-    buffer.item = pushingitem;
-    //2.1找component 
-    if (buffer.item.sourcetype === 'lawname') {
-      buffer.data = { chapter: buffer.item.name }
-    } else if (buffer.item.sourcetype === 'note') {
-      const [username, foldername, notename] = buffer.item.id.split("-");
-      const note = await get_note(ApiLink, username, foldername, notename)
-      const notenav = await get_note_nav(ApiLink, buffer.item.id);
-      if (note && notenav) {
-        buffer.data = { theNote: note, theNoteNav: notenav }
-      }
-    } else {
-      const res = await fetch(`${ApiLink}/${buffer.item.sourcetype}/${buffer.item.id}`);
-      const resdata = await res.json();
-      buffer.data = { datax: resdata };
+
+    let buffer = await finditem(pushingitem);
+    if (buffer == null) {
+      return false
     }
 
     workingitemlist.value.push(buffer);
-
 
     workingitemlist.value = [
       ...workingitemlist.value.filter(item => !item.locked),
@@ -64,16 +49,48 @@ async function pushworkingitem(pushingitem: othersourceitem) {
 
     ]
 
-
     if (workingitemlist.value.length > 5) {
       workingitemlist.value.shift() // 移除最前面那個（應是可刪的）
     }
 
 
   }
+  return true
 
 
 }
+
+async function finditem(pushingitem: othersourceitem): Promise<WorkingItem | null> {
+  let buffer: WorkingItem = {
+    item: pushingitem,
+    con: markRaw(get_style(pushingitem.sourcetype).con),
+    locked: false
+  };
+  buffer.item = pushingitem;
+  //2.1找component 
+  if (buffer.item.sourcetype === 'lawname') {
+    buffer.data = { chapter: buffer.item.name }
+  } else if (buffer.item.sourcetype === 'note') {
+    const [username, foldername, notename] = buffer.item.id.split("-");
+    const note = await get_note(ApiLink, username, foldername, notename)
+    const notenav = await get_note_nav(ApiLink, buffer.item.id);
+    if (note && notenav) {
+      buffer.data = { theNote: note, theNoteNav: notenav }
+    } else {
+      return null
+    }
+  } else {
+    const res = await fetch(`${ApiLink}/${buffer.item.sourcetype}/${buffer.item.id}`);
+    if (!res.ok) {
+      return null
+    }
+    const resdata = await res.json();
+    buffer.data = { datax: resdata };
+  }
+  return buffer
+}
+
+
 
 const search = ref<String | null>(null);
 const searchtype = ref("all");
@@ -241,20 +258,30 @@ async function getlawsourcelist(type: string): Promise<othersourceitem[]> {
 
 };
 
+
+
+
+
 const nowarea = ref("search");
 const clickitem = async (item: othersourceitem) => {
-  history.value = history.value.filter(historyitem => historyitem.name !== item.name);
-  history.value.push(item);
-  localStorage.setItem("sourcename", JSON.stringify(history.value))
-  nowarea.value = 'result';
-
-  await pushworkingitem(item);
-  showingitem.value = item.name;
-
+  // 1.先來看看item是否真的存在
+  let res = await pushworkingitem(item);
+  if (res) {
+    history.value = history.value.filter(historyitem => historyitem.name !== item.name);
+    history.value.push(item);
+    localStorage.setItem("sourcename", JSON.stringify(history.value))
+    nowarea.value = 'result';
+    showingitem.value = item.name;
+  } else {
+    swal("發生錯誤，該資源不存在，或網路壞去!");
+    history.value = history.value.filter(historyitem => historyitem.name !== item.name);
+    localStorage.setItem("sourcename", JSON.stringify(history.value))
+  }
 }
 
 const closeitem = (item: othersourceitem) => {
   workingitemlist.value = workingitemlist.value.filter(theitem => theitem.item !== item)
+  nowarea.value = 'search';
 }
 
 
@@ -325,8 +352,9 @@ const showlist = ref(false);
           <template #default="{ item }">
             <div :sourcetype="item.sourcetype" :id="item.id" @click=" clickitem(item)" class="item">
               <div class="sourcetag">
-                <i class="fa-solid fa-circle" :style="{ color: get_style(item.sourcetype).color }"></i>
-                <p>{{ get_style(item.sourcetype).name }}</p>
+                <p :style="{ 'background-color': get_style(item.sourcetype).color }">{{ get_style(item.sourcetype).name
+                  }}
+                </p>
               </div>
               <div class="itemname">{{ item.name }}</div>
             </div>
@@ -338,8 +366,9 @@ const showlist = ref(false);
           <template #default="{ item }">
             <div :sourcetype="item.sourcetype" :id="item.id" @click=" clickitem(item)" class="item">
               <div class="sourcetag">
-                <i class="fa-solid fa-circle" :style="{ color: get_style(item.sourcetype).color }"></i>
-                <p>{{ get_style(item.sourcetype).name }}</p>
+                <p :style="{ 'background-color': get_style(item.sourcetype).color }">{{ get_style(item.sourcetype).name
+                  }}
+                </p>
               </div>
               <div class="itemname">{{ item.name }}</div>
             </div>
@@ -420,10 +449,11 @@ const showlist = ref(false);
 .selected {
   margin: 5px;
   padding: 5px;
-  border-radius: 5px;
+  border-radius: 10px;
   text-align: center;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
 }
 
@@ -522,6 +552,9 @@ const showlist = ref(false);
 .sourcetag p {
   margin: 0px;
   font-size: 14px;
+  padding: 5px;
+  border-radius: 5px;
+  font-weight: 500;
 }
 
 

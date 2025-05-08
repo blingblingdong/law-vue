@@ -63,6 +63,15 @@ export default class FormView extends View {
 		const labeledInput = new LabeledFieldView( this.locale, createLabeledInputText );
 
 		labeledInput.label = label;
+  
+
+    if (label === '輸入法條') {
+    labeledInput.fieldView.extendTemplate({
+		attributes: {
+			list: 'law-name-data'
+		}
+	});
+    }
 
 		return labeledInput;
 	}

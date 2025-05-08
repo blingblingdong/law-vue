@@ -11,7 +11,10 @@
       <div id="publicFileName">
         <template v-if="!changing_name">
           <span>{{ localNote.file_name }}</span>
-          <i class="fa-solid fa-pen" @click="changing_name = true" v-if="account.username === localNote.user_name"></i>
+          <template v-if="account.username === localNote.user_name">
+            <i class="fa-solid fa-pen" @click="changing_name = true"></i>
+            <i class="fa-solid fa-trash" @click="deletenote"></i>
+          </template>
         </template>
         <template v-else>
           <input v-model="changingnewname"></input>
@@ -20,7 +23,7 @@
         </template>
       </div>
       <div id="publicFileWriter">write by: {{ localNote.user_name }}</div>
-      <div>Last Edit</div>
+      <div>Last Edit： {{ date?.toDateString() }}</div>
       <div>State：
         <span v-if="localNote.public">released
           <i class="fa-regular fa-circle-check" @click="change_state"
@@ -111,7 +114,7 @@
 <script lang="ts" setup>
 import { defineProps, onMounted, ref, nextTick, onUnmounted, watch } from 'vue'
 import type { Note, H2Nav, } from '../types/Note'
-import { get_note_nav, update_note, update_note_name, update_note_state } from '../types/Note'
+import { get_note_nav, update_note, update_note_name, update_note_state, delete_note, get_note_date, update_note_date } from '../types/Note'
 import ParagraphBlock from './BlockCon/ParagraphBlock.vue'
 import CustomCardBlock from './BlockCon/CustomCardBlock.vue'
 import BlockQuoteBlock from './BlockCon/BlockQuoteBlock.vue'
@@ -129,9 +132,28 @@ import type { EditorConfig } from 'ckeditor5';
 import { editorConfig } from '../types/ck'
 import { useAccountStore } from '../store/page.ts'
 import { getApiUrl } from '../utils/api.ts'
+import swal from 'sweetalert'
+
+
 
 const account = useAccountStore();
+const deletenote = async () => {
+  const willDelete = await swal({
+    title: "Are you sure?",
+    text: "Are you sure that you want to delete this file?",
+    icon: "warning",
+    dangerMode: true,
+  });
 
+  if (willDelete) {
+    let res = await delete_note(ApiLink, localNote.value.id);
+    if (res) {
+      swal("Deleted!", `${localNote.value.id} has been deleted!`, "success");
+    } else {
+      swal("Oops!", "Seems like we couldn't fetch the info", "error");
+    }
+  }
+}
 
 
 
@@ -144,6 +166,7 @@ const props = defineProps<{
   theNoteNav: H2Nav[] | null;
 }>();
 const IsShowNav = ref(true);
+const date = ref<Date | null>(null);
 
 const localNote = ref<Note>(props.theNote);
 const localNoteNav = ref<H2Nav[] | null>(props.theNoteNav);
@@ -216,7 +239,7 @@ const handleWindowScroll = () => {
 
 const editorMountPoint = ref<HTMLElement | null>(null)
 
-onMounted(() => {
+onMounted(async () => {
 
   window.addEventListener('scroll', handleWindowScroll);
   // 初次載入時也計算一次
@@ -237,6 +260,8 @@ onMounted(() => {
     .catch(error => {
       console.error('There was a problem initializing the editor:', error)
     })
+
+  date.value = await get_note_date(ApiLink, localNote.value.id);
 });
 
 onUnmounted(() => {
@@ -270,8 +295,12 @@ const saveNote = async () => {
     if (editorInstance) {
       let contentString = (editorInstance.value as Editor).getData();
       let resNote = await update_note(ApiLink, localNote.value.id, contentString);
-      if (resNote) {
+      const now = new Date();
+      let resdate = await update_note_date(ApiLink, localNote.value.id, now.toISOString());
+      if (resNote && resdate) {
         localNote.value = resNote;
+
+        date.value = new Date(Date.now());
       }
       await nextTick();
       localNoteNav.value = await get_note_nav(ApiLink, localNote.value.id);

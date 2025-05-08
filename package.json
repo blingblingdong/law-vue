@@ -12,14 +12,17 @@
     "axios": "^1.8.4",
     "ckeditor5": "^43.2.0",
     "lodash-es": "^4.17.21",
+    "lucide-vue-next": "^0.503.0",
     "pinia": "^3.0.2",
+    "swal": "^0.1.0",
+    "sweetalert": "^2.1.2",
     "vue": "^3.5.13",
     "vue3-virtual-scroller": "^0.2.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
-    "@vue/tsconfig": "^0.7.0",
-    "typescript": "~5.7.2",
+    "@vue/tsconfig": "0.7.0",
+    "typescript": "5.7.3",
     "vite": "^6.2.0",
     "vue-tsc": "^2.2.4"
   }

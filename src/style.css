@@ -339,3 +339,22 @@ i:hover {
   cursor: pointer;
   color: var(--primary-color);
 }
+
+.swal-modal {
+  background-color: var(--bg-color);
+}
+
+.swal-text {
+  color: var(--text-color);
+}
+
+.swal-title {
+  color: var(--text-color);
+}
+
+#closePopup {
+  z-index: 1000;
+  position: fixed;
+  top: 30%;
+  font-size: 25px;
+}

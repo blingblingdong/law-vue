@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import search from './components/search.vue'
-import LawPage from './components/LawPage.vue'
 import MyFile from './components/MyFile.vue'
-import FilePage from './components/FilePage.vue'
 import GalleryPage from './components/GalleryPage.vue'
 import LawSourcePage from './components/LawSourcePage.vue'
+import Library from './components/library.vue'
 import { ref, onMounted, watch } from 'vue'
 import type { UrlGallery } from './types/Folder.ts'
 import Account from './Account.vue'
-
-const ApiUrl = 'https://deploylawweb-production.up.railway.app'
-const dataOption = ref('')
-const sidebar = ref(false);
+const dataOption = ref<null | othersourceitem[]>()
 const urltogallery = ref<UrlGallery | null>(null)
 import { useUiStore, useAccountStore } from './store/page.ts'
 import { nextTick } from 'vue'
 const ui = useUiStore();
+import { getApiUrl } from './utils/api'
+import { Library as LibraryIcon, NotebookPen as NotebookIcon, BookText as BookTextIcon, Folder as FolderIcon } from 'lucide-vue-next';
+const ApiLink = getApiUrl();
+import swal from 'sweetalert'
+
+
+interface othersourceitem {
+  name: string,
+  id: string,
+  sourcetype: string,
+}
 
 
 document.addEventListener('keydown', function (event) {
@@ -35,8 +41,8 @@ document.addEventListener('keydown', function (event) {
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${ApiUrl}/all_chapters`);
-    dataOption.value = await res.text();
+    const res = await fetch(`${ApiLink}/lawnamelist`);
+    dataOption.value = await res.json() as othersourceitem[];
   } catch (error) {
     console.error('API 請求失敗：', error)
   }
@@ -54,7 +60,7 @@ onMounted(async () => {
     //1.尋找令牌
     account.username = user;
     account.email = email;
-    await account.find_token(ApiUrl);
+    await account.find_token(ApiLink);
     await nextTick();
     if (!account.loginflag) {
       ui.currentPage = "用戶"
@@ -100,6 +106,37 @@ const picture = () => {
 }
 
 
+
+const clickfolder = () => {
+  if (!account.loginflag) {
+    swal("Please log in or sign up to create notes.", {
+      buttons: ["Stay as Visitor", "Log In"]
+    })
+      .then((value) => {
+        if (value) {
+          ui.currentPage = '用戶';
+        }
+      });
+  } else {
+    ui.currentPage = '資料夾';
+  }
+}
+
+const clickLibarary = () => {
+  if (!account.loginflag) {
+    swal("Please log in or sign up to create notes.", {
+      buttons: ["Stay as Visitor", "Log In"]
+    })
+      .then((value) => {
+        if (value) {
+          ui.currentPage = '用戶';
+        }
+      });
+  } else {
+    ui.currentPage = '圖書館';
+  }
+}
+
 </script>
 
 <template>
@@ -109,20 +146,38 @@ const picture = () => {
       <div id="thesidebar" v-show="showsidebar">
         <img :src="picture()" id='user-png' class='user-btn catpng' @click="ui.currentPage = '用戶'">
         <div id="pagelist">
-          <i class="fa-solid fa-magnifying-glass" @click="ui.currentPage = '查詢'"
-            :style="{ color: activecolor('查詢') }"></i>
-          <i class="fa-solid fa-folder" @click="ui.currentPage = '資料夾'" :style="{ color: activecolor('資料夾') }"></i>
-          <i class="fa-solid fa-globe" @click="ui.currentPage = '畫廊'" :style="{ color: activecolor('畫廊') }"></i>
-          <i class="fa-solid fa-xmark" @click="showsidebar = false"></i>
+          <div class="searchicon">
+            <i class="fa-solid fa-magnifying-glass" @click="ui.currentPage = '查詢'"
+              :style="{ color: activecolor('查詢') }"></i>
+            <span>search</span>
+          </div>
+          <div class="searchicon">
+            <NotebookIcon @click="clickfolder()" :style="{ color: activecolor('資料夾') }" />
+            <span style="font-size:15px">note</span>
+          </div>
+          <div class="searchicon">
+            <LibraryIcon :size="24" @click="ui.currentPage = '畫廊'" :style="{ color: activecolor('畫廊') }" />
+            <span>gallery</span>
+          </div>
+          <div class="searchicon">
+            <FolderIcon @click="clickLibarary()" :style="{ color: activecolor('圖書館') }" />
+            <span>Folder</span>
+          </div>
+          <div class="searchicon">
+            <i class="fa-solid fa-xmark" @click="showsidebar = false"></i>
+          </div>
         </div>
       </div>
     </div>
     <div id="main-content">
-      <datalist id="law-name-data" v-html='dataOption'></datalist>
+      <datalist id="law-name-data" v-if="dataOption">
+        <option v-for="item in dataOption">{{ item.name }}</option>
+      </datalist>
       <LawSourcePage v-show="ui.currentPage === '查詢'" />
       <MyFile v-show="ui.currentPage === '資料夾'" />
       <Account v-show="ui.currentPage === '用戶'" />
       <GalleryPage v-show="ui.currentPage === '畫廊'" :TheUrl="urltogallery" />
+      <Library v-show="ui.currentPage === '圖書館'" />
     </div>
   </div>
 
@@ -132,6 +187,19 @@ const picture = () => {
 </template>
 
 <style scoped>
+.searchicon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.searchicon span {
+  font-size: 13px;
+}
+
+
+
 #realbody {
   display: grid;
   grid-template-columns: 1fr 100fr;

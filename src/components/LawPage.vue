@@ -34,11 +34,15 @@ const pagelist = ["All", "Chapter", "Text", "Num"]
 
 
 
-
+import LibPopup from './LibPopup.vue'
+const showPopup = ref(false);
 </script>
 
 <template>
   <div id="test-area">
+    <i class="fa-solid fa-bookmark" @click="showPopup = true"></i>
+    <LibPopup :itemId="chapter" :itemType="'lawname'" :itemName="chapter" v-show="showPopup" />
+    <i class="fa-solid fa-xmark" v-show="showPopup" @click="showPopup = false" id="closePopup"></i>
     <ul class="law-search-area-nav">
       <li v-for="page in pagelist" @click="HandlePage(page)">
         <a :class="{ active: NowPage === page }">{{ page }}</a>

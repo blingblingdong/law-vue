@@ -99,6 +99,32 @@ export async function getChapterList(chapter: string, ApiLink: string): Promise<
   }
 }
 
+export interface HistoryLaw {
+  id: String,
+  lawid: String,
+  no: number,
+  content: String,
+  date: String,
+}
+
+export async function getHistoryLaw(ApiLink: string, lawid: String): Promise<HistoryLaw[] | null> {
+  try {
+    const response = await fetch(`${ApiLink}/historylaw/${lawid}`);
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json(); // 假設回應是 JSON 格式
+    // 利用型別斷言將 data 當成 Law
+    return data as HistoryLaw[];
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+}
+
+
 export async function get_chapter_lawList(chapter1: string, chapter2: string, ApiLink: string): Promise<Law[] | null> {
   const chapterData = { chapter1: chapter1, chapter2: chapter2 };
   const res = await fetch(`${ApiLink}/lawList_by_chapter`, {

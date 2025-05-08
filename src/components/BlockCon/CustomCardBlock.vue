@@ -6,14 +6,11 @@
         第
         <span class="law-block-num">{{ card.num }}</span>
         條
-        <i class="fas fa-caret-up" v-show="showLines" @click="showLines = false"></i>
-        <i class="fas fa-caret-down" v-show="!showLines" @click="showLines = true"></i>
       </p>
       <div class="tool-bar">
-        <p>history</p>
-        <p>original</p>
-        <p>note</p>
-
+        <i class="fa-solid fa-eye" v-show="!showLines" @click="showLines = true"></i>
+        <i class="fa-solid fa-eye-slash" v-show="showLines" @click="showLines = false"></i>
+        <i class="fa-solid fa-clock-rotate-left" @click="clickhistorylaw"></i>
       </div>
       <div class='law-block-lines' v-show="showLines">
         <template v-for="line in card.lines">
@@ -29,6 +26,23 @@
           </div>
         </template>
       </div>
+      <div class="lawnote" v-if="false">
+        <div class="lawnote-title">筆記開頭</div>
+        <div class="lawnote-content" v-html="lawnotecontent" v-if="false">
+        </div>
+      </div>
+      <div class="historylaw" v-if="showhistorylaw">
+        <template v-if="historylawvec">
+          <p>歷史法規</p>
+          <div v-for="historylaw in historylawvec" class="historycontent">
+            <div>{{ historylaw.date }}</div>
+            <pre>{{ historylaw.content }}</pre>
+          </div>
+        </template>
+        <template v-else>
+          目前沒有歷史法規...
+        </template>
+      </div>
     </div>
   </div>
 </template>
@@ -37,9 +51,34 @@
 import { defineProps, ref, onMounted } from 'vue'
 import type { Attributes, InlineNode, Block, Note, Line, LawCard } from '../../types/Note'
 import InlineNodeTemplate from './InlineNodeTemplate.vue'
-import { to_history_link } from '../../types/Law.ts'
+import { to_history_link, type HistoryLaw, getHistoryLaw } from '../../types/Law.ts'
 import { useUiStore } from '../../store/page.ts'
 const ui = useUiStore();
+import { getApiUrl } from '../../utils/api.ts'
+import swal from 'sweetalert'
+
+const ApiLink = getApiUrl();
+
+const lawnotecontent = ref("<p>ggh</p>")
+
+const historylawvec = ref<HistoryLaw[]>([]);
+const showhistorylaw = ref(false);
+
+
+
+const clickhistorylaw = async () => {
+  showhistorylaw.value ? showhistorylaw.value = false : showhistorylaw.value = true;
+  if (showhistorylaw.value) {
+    const id = `${props.block.data?.chapter}-${props.block.data?.num}`
+    const res = await getHistoryLaw(ApiLink, id);
+    if (res && res.length != 0) {
+      historylawvec.value = res;
+    } else {
+      swal("抱歉，網頁還未寫入本法的歷史紀錄");
+      showhistorylaw.value = false;
+    }
+  }
+}
 
 
 
@@ -59,9 +98,19 @@ if (props.block.data) {
 </script>
 
 <style scoped>
+.controlshowlaw {
+  position: relative;
+  left: 73%;
+}
+
+.lawnote {
+  border-top: 1px solid white;
+  margin-top: 10px;
+}
+
 .tool-bar {
   display: flex;
-  gap: 5px;
+  gap: 20px;
   margin-bottom: 10px;
 }
 
@@ -141,8 +190,16 @@ if (props.block.data) {
   color: var(--primary-color);
 }
 
+.historycontent {
+  margin-top: 10px;
+}
 
 .law-block-lines {
   list-style-type: none;
+}
+
+pre {
+  all: unset;
+  white-space: pre-wrap;
 }
 </style>

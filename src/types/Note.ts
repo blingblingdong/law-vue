@@ -175,30 +175,53 @@ export async function update_note(ApiLink: string, id: string, content: string):
   return null;
 }
 
-
-
-export async function create_note(ApiLink: string, note: Note) {
-  try {
-    let res = await fetch(`${ApiLink}/note`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(note),
-    });
-    if (res.ok) {
-      alert("加入成功");
-    }
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      // 現在 TypeScript 知道這是一個 Error 對象，可以安全地訪問 .message 屬性
-      console.log("Error: " + error.message);
-    } else {
-      // 如果錯誤不是 Error 對象，處理其他類型的錯誤或記錄通用錯誤信息
-
-      console.log("Error: ", error);
-    }
+export async function update_note_date(ApiLink: string, id: String, date: String): Promise<boolean> {
+  let res = await fetch(`${ApiLink}/date/${id}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ date: date }),
+  });
+  if (res.ok) {
+    return true
   }
+  return false
+}
+
+export async function get_note_date(ApiLink: string, id: String): Promise<null | Date> {
+  const response = await fetch(`${ApiLink}/date/${id}`);
+  if (!response.ok) {
+    return null
+  }
+  const data = await response.json();
+  return new Date(data);
+}
+
+
+
+export async function create_note(ApiLink: string, note: Note): Promise<boolean> {
+  let res = await fetch(`${ApiLink}/note`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(note),
+  });
+  if (res.ok) {
+    return true
+  }
+  return false
+}
+
+export async function delete_note(ApiLink: string, id: String): Promise<boolean> {
+  let res = await fetch(`${ApiLink}/note/${id}`, {
+    method: 'DELETE',
+  });
+  if (res.ok) {
+    return true
+  }
+  return false
 }
 
 export async function SSR(note: Note): Promise<string | null> {
@@ -223,4 +246,25 @@ export async function SSR(note: Note): Promise<string | null> {
 }
 
 
+export async function create_dir(ApiLink: string, user_name: string, directory: string): Promise<boolean> {
+  let id = user_name + "-" + directory;
+  const dir = { id: id, user_name: user_name, directory: directory, public: true, description: "簡介" }
+  try {
+    let res = await fetch(`${ApiLink}/dir`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dir),
+    });
+    if (res.ok) {
+      return true;
+    } else {
+      return false
+    }
+  } catch (error) {
+    console.log("Error: ", error);
+    return false;
+  }
+}
 
