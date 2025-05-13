@@ -1,5 +1,5 @@
 
-let API_BASE = import.meta.env.VITE_API_DEPLOY;
+let API_BASE = import.meta.env.VITE_API_LOCAL;
 
 export async function initApiUrl(): Promise<void> {
   try {
