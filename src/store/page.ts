@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { nextTick } from 'vue'
 
 interface othersourceitem {
   name: string,
@@ -90,6 +91,8 @@ export const useUiStore = defineStore('ui', {
     currentPage: string
     actionFlag: boolean
     searchItem: othersourceitem
+    searchPosition: number
+    notePosition: number
   } => ({
     currentPage: '查詢',
     actionFlag: false,
@@ -97,13 +100,39 @@ export const useUiStore = defineStore('ui', {
       id: '',
       name: '',
       sourcetype: ''
-    }
+    },
+    searchPosition: 0,
+    notePosition: 0,
   }),
 
   actions: {
-    goToPageWithAction(page: string) {
+    async goToPageWithAction(page: string) {
+      // 1.先把目前頁面的位置保存
+      switch (this.currentPage) {
+        case '查詢':
+          this.searchPosition = window.scrollY;
+          break;
+        case '資料夾':
+          this.notePosition = window.scrollY;
+          break;
+      }
+
+      await nextTick();
+
       this.currentPage = page
       this.actionFlag = true
+
+      await nextTick();
+
+      switch (page) {
+        case "查詢":
+          window.scrollTo({ top: this.searchPosition });
+          break;
+        case "資料夾":
+          window.scrollTo({ top: this.notePosition });
+          break;
+      }
+
     },
 
     goToLawPage(lawname: string) {

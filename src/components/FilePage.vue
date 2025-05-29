@@ -288,6 +288,7 @@ const enableEditor = async () => {
     // let htmlContent = await SSR(n);
     (editorInstance.value as Editor).setData(htmlContent as string);
   }
+  IsShowNav.value = false;
 }
 
 const saveNote = async () => {
@@ -308,6 +309,7 @@ const saveNote = async () => {
     await nextTick();
     IntoEditor.value = false;
   }
+  IsShowNav.value = true;
 }
 
 

@@ -118,7 +118,7 @@ const clickfolder = () => {
         }
       });
   } else {
-    ui.currentPage = '資料夾';
+    ui.goToPageWithAction('資料夾');
   }
 }
 
@@ -147,7 +147,7 @@ const clickLibarary = () => {
         <img :src="picture()" id='user-png' class='user-btn catpng' @click="ui.currentPage = '用戶'">
         <div id="pagelist">
           <div class="searchicon">
-            <i class="fa-solid fa-magnifying-glass" @click="ui.currentPage = '查詢'"
+            <i class="fa-solid fa-magnifying-glass" @click="ui.goToPageWithAction('查詢')"
               :style="{ color: activecolor('查詢') }"></i>
             <span>search</span>
           </div>

@@ -24,6 +24,114 @@ const showCreateFile = ref<boolean>(false);
 const showsidebar = ref<boolean>(true);
 const notShowNote = ref(true);
 
+interface FocusOn {
+  type: string,
+  position: number,
+}
+const focuson = ref<FocusOn>({ type: "folder", position: 0 });
+const IsFocus = (type: string, name: string) => {
+  var flag = false;
+  if (focuson.value.type === type && folderlist.value) {
+    var number = focuson.value.position;
+    var thename = folderlist.value[number].directory;
+    if (thename === name) {
+      flag = true;
+    }
+  }
+
+  if (focuson.value.type === type && notelist.value) {
+    var number = focuson.value.position;
+    var thename = notelist.value[number];
+    if (thename === name) {
+      flag = true;
+    }
+  }
+
+  return flag;
+}
+
+document.addEventListener('keydown', async function (event) {
+
+  if (focuson.value.type === "folder" && folderlist.value) {
+    // 例如，如果用戶按下 Ctrl+D
+    if (event.key === 'ArrowDown') {
+      if (folderlist.value?.length - 1 == focuson.value.position) {
+        focuson.value.position = 0;
+      } else {
+        focuson.value.position += 1;
+      }
+      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+      // 在這裡添加更多的動作，如打開自訂對話框等
+    }
+
+    if (event.key === 'ArrowUp') {
+      if (focuson.value.position == 0) {
+        focuson.value.position = folderlist.value?.length - 1;
+      } else {
+        focuson.value.position -= 1;
+      }
+      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+      // 在這裡添加更多的動作，如打開自訂對話框等
+    }
+
+
+    if (event.key === 'Enter') {
+      await clickFolder(folderlist.value[focuson.value.position].directory)
+      await nextTick();
+      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+      // 在這裡添加更多的動作，如打開自訂對話框等
+    }
+
+  }
+
+  if (focuson.value.type === "note" && notelist.value) {
+    // 例如，如果用戶按下 Ctrl+D
+    if (event.key === 'ArrowDown') {
+      if (notelist.value.length - 1 == focuson.value.position) {
+        focuson.value.position = 0;
+      } else {
+        focuson.value.position += 1;
+      }
+      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+      // 在這裡添加更多的動作，如打開自訂對話框等
+    }
+
+    if (event.key === 'ArrowUp') {
+      if (focuson.value.position == 0) {
+        focuson.value.position = notelist.value.length - 1;
+      } else {
+        focuson.value.position -= 1;
+      }
+      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+      // 在這裡添加更多的動作，如打開自訂對話框等
+    }
+
+
+    if (event.key === 'Enter') {
+      await clickNote(notelist.value[focuson.value.position])
+
+      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+      // 在這裡添加更多的動作，如打開自訂對話框等
+    }
+
+  }
+
+  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+    if (focuson.value.type === "folder" && notelist.value) {
+      focuson.value.type = "note";
+    } else if (focuson.value.type === "note" && notelist.value) {
+      focuson.value.type = "folder";
+    }
+
+    event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
+    // 在這裡添加更多的動作，如打開自訂對話框等
+  }
+
+
+
+});
+
+
 const openSideBar = () => {
   // 1.將筆記本頁關閉
   notShowNote.value = true;
@@ -100,7 +208,8 @@ const inputDirName = ref("");
             <button @click="createDir">create</button>
             <button>cancel</button>
           </div>
-          <li class='privateFolderName' v-for="folder in folderlist">
+          <li class='privateFolderName' v-for="folder in folderlist"
+            :class="{ focusFolder: IsFocus('folder', folder.directory), showfolder: FolderNow === folder.directory }">
             <a @click.prevent="clickFolder(folder.directory)">{{ folder.directory }}</a>
           </li>
         </ul>
@@ -108,7 +217,7 @@ const inputDirName = ref("");
       <div id="privateNote">
         <ul id="privateNoteList" v-if="notelist">
           <span>{{ FolderNow }}</span>
-          <li class='privateNoteName' v-for="note in notelist">
+          <li class='privateNoteName' v-for="note in notelist" :class="{ focusFolder: IsFocus('note', note) }">
             <a @click.prevent="clickNote(note)">{{ note }}</a>
           </li>
           <div id="crateFile" v-if="showCreateFile">
@@ -194,8 +303,8 @@ ul span {
 
 #privateFolderAndNote {
   display: flex;
-  gap: 5px;
-  flex: 30%;
+  gap: 50px;
+  flex: 100%;
 }
 
 .folderControll {
@@ -203,16 +312,29 @@ ul span {
   position: fixed;
 }
 
+.notshowNote {
+  display: none !important;
+}
+
+
 @media only screen and (max-width: 600px) {
   .notshowNote {
     display: none !important;
   }
 
-  #privateFolderAndNote {
-    display: flex;
-    gap: 50px;
-    flex: 100%;
-  }
 
+}
+
+.privateFolderName {
+  margin: 10px 0px;
+}
+
+.showfolder {
+  color: var(--primary-color);
+}
+
+.focusFolder {
+  border: 1px solid white;
+  border-radius: 4px;
 }
 </style>

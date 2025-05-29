@@ -16,7 +16,8 @@ interface WorkingItem {
   item: othersourceitem,
   con: Component,
   locked: boolean,
-  data?: any
+  data?: any,
+  position: number,
 }
 
 const workingitemlist = ref<WorkingItem[]>([]);
@@ -64,7 +65,8 @@ async function finditem(pushingitem: othersourceitem): Promise<WorkingItem | nul
   let buffer: WorkingItem = {
     item: pushingitem,
     con: markRaw(get_style(pushingitem.sourcetype).con),
-    locked: false
+    locked: false,
+    position: 0
   };
   buffer.item = pushingitem;
   //2.1找component 
@@ -101,6 +103,7 @@ import { getApiUrl } from '../utils/api'
 const ApiLink = getApiUrl();
 const history = ref<othersourceitem[]>([]);
 import { useUiStore } from '../store/page.ts'
+import { nextTick } from 'vue'
 const ui = useUiStore()
 
 
@@ -125,6 +128,8 @@ watch(
     clickitem(item);
   }
 )
+
+
 
 onMounted(async () => {
   othersourcelist.value = [];
@@ -264,7 +269,12 @@ async function getlawsourcelist(type: string): Promise<othersourceitem[]> {
 
 const nowarea = ref("search");
 const clickitem = async (item: othersourceitem) => {
-  // 1.先來看看item是否真的存在
+  workingitemlist.value.forEach(item => {
+    if (item.item.name === showingitem.value) {
+      item.position = window.scrollY;
+    }
+  });
+  await nextTick();
   let res = await pushworkingitem(item);
   if (res) {
     history.value = history.value.filter(historyitem => historyitem.name !== item.name);
@@ -272,6 +282,15 @@ const clickitem = async (item: othersourceitem) => {
     localStorage.setItem("sourcename", JSON.stringify(history.value))
     nowarea.value = 'result';
     showingitem.value = item.name;
+    await nextTick();
+    workingitemlist.value.forEach(
+      workingitem => {
+        if (workingitem.item.name === item.name) {
+          const y = workingitem.position;
+          window.scrollTo({ top: y });
+        }
+      }
+    )
   } else {
     swal("發生錯誤，該資源不存在，或網路壞去!");
     history.value = history.value.filter(historyitem => historyitem.name !== item.name);
@@ -285,8 +304,15 @@ const closeitem = (item: othersourceitem) => {
 }
 
 
-const backtosearch = () => {
+const backtosearch = async () => {
+  workingitemlist.value.forEach(item => {
+    if (item.item.name === showingitem.value) {
+      item.position = window.scrollY;
+    }
+  });
+  await nextTick();
   nowarea.value = 'search';
+  showingitem.value = "";
 }
 
 
