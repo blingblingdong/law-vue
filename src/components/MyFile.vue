@@ -52,6 +52,10 @@ const IsFocus = (type: string, name: string) => {
 
 document.addEventListener('keydown', async function (event) {
 
+  if (!showsidebar.value) {
+    return;
+  }
+
   if (focuson.value.type === "folder" && folderlist.value) {
     // 例如，如果用戶按下 Ctrl+D
     if (event.key === 'ArrowDown') {
