@@ -4,9 +4,10 @@ import FilePage from './FilePage.vue'
 import type { Folder } from '../types/Folder.ts'
 import type { H2Nav, Note } from '../types/Note.ts'
 import { get_every_note, get_note_list, get_note, get_note_nav, create_note, create_dir } from '../types/Note'
-import { get_every_folders, get_folder } from '../types/Folder'
+import { get_every_folders, get_folder, update_note_order, get_note_order } from '../types/Folder'
 const folderlist = ref<null | Folder[]>(null);
 import swal from 'sweetalert'
+const ordering = ref(false);
 
 
 import { getApiUrl } from '../utils/api'
@@ -50,6 +51,18 @@ const IsFocus = (type: string, name: string) => {
   return flag;
 }
 
+const confirmOrder = async () => {
+  if (notelist && account.username) {
+    let result = await update_note_order(ApiLink, account.username as string, FolderNow.value, notelist.value as string[]);
+    if (result) {
+      swal("創建成功")
+    } else {
+      swal("創建失敗")
+    }
+  }
+  ordering.value = false;
+}
+
 document.addEventListener('keydown', async function (event) {
 
   if (!showsidebar.value) {
@@ -57,15 +70,13 @@ document.addEventListener('keydown', async function (event) {
   }
 
   if (focuson.value.type === "folder" && folderlist.value) {
-    // 例如，如果用戶按下 Ctrl+D
     if (event.key === 'ArrowDown') {
       if (folderlist.value?.length - 1 == focuson.value.position) {
         focuson.value.position = 0;
       } else {
         focuson.value.position += 1;
       }
-      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-      // 在這裡添加更多的動作，如打開自訂對話框等
+      event.preventDefault();
     }
 
     if (event.key === 'ArrowUp') {
@@ -74,30 +85,25 @@ document.addEventListener('keydown', async function (event) {
       } else {
         focuson.value.position -= 1;
       }
-      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-      // 在這裡添加更多的動作，如打開自訂對話框等
+      event.preventDefault();
     }
 
 
     if (event.key === 'Enter') {
       await clickFolder(folderlist.value[focuson.value.position].directory)
       await nextTick();
-      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-      // 在這裡添加更多的動作，如打開自訂對話框等
     }
 
   }
 
   if (focuson.value.type === "note" && notelist.value) {
-    // 例如，如果用戶按下 Ctrl+D
     if (event.key === 'ArrowDown') {
       if (notelist.value.length - 1 == focuson.value.position) {
         focuson.value.position = 0;
       } else {
         focuson.value.position += 1;
       }
-      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-      // 在這裡添加更多的動作，如打開自訂對話框等
+      event.preventDefault();
     }
 
     if (event.key === 'ArrowUp') {
@@ -106,16 +112,14 @@ document.addEventListener('keydown', async function (event) {
       } else {
         focuson.value.position -= 1;
       }
-      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-      // 在這裡添加更多的動作，如打開自訂對話框等
+      event.preventDefault();
     }
 
 
     if (event.key === 'Enter') {
       await clickNote(notelist.value[focuson.value.position])
 
-      event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-      // 在這裡添加更多的動作，如打開自訂對話框等
+      event.preventDefault();
     }
 
   }
@@ -126,9 +130,8 @@ document.addEventListener('keydown', async function (event) {
     } else if (focuson.value.type === "note" && notelist.value) {
       focuson.value.type = "folder";
     }
-
-    event.preventDefault();  // 阻止預設行為，例如阻止書籤對話框的出現
-    // 在這裡添加更多的動作，如打開自訂對話框等
+    focuson.value.position = 0;
+    event.preventDefault();
   }
 
 
@@ -157,9 +160,12 @@ onMounted(async () => {
 }
 )
 
-const clickFolder = async (folder_name: string) => {
-  notelist.value = await get_note_list(ApiLink, user.value, folder_name);
+const clickFolder = async (folder_name: string, index?: number) => {
+  notelist.value = await get_note_order(ApiLink, user.value, folder_name);
   FolderNow.value = folder_name;
+  if (index) {
+    focuson.value.position = index;
+  }
 }
 
 const clickNote = async (notename: string) => {
@@ -174,7 +180,7 @@ const createNote = async () => {
   let note: Note = { id: id, user_name: user.value, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value, public: true };
   await create_note(ApiLink, note);
   await nextTick();
-  notelist.value = await get_note_list(ApiLink, user.value, FolderNow.value);
+  notelist.value = await get_note_order(ApiLink, user.value, FolderNow.value);
   showCreateFile.value = false;
 }
 
@@ -194,6 +200,24 @@ const createDir = async () => {
 
 const showCreateDir = ref(false);
 const inputDirName = ref("");
+
+const moveup = (index: number) => {
+  if (notelist.value != null) {
+    const tmp = notelist.value[index - 1];
+    notelist.value[index - 1] = notelist.value[index];
+    notelist.value[index] = tmp;
+  }
+}
+
+const movedown = (index: number) => {
+  if (notelist.value != null) {
+    const tmp = notelist.value[index + 1];
+    notelist.value[index + 1] = notelist.value[index];
+    notelist.value[index] = tmp;
+  }
+}
+
+
 </script>
 
 
@@ -210,29 +234,41 @@ const inputDirName = ref("");
           <div id="crateDir" v-if="showCreateDir">
             <input v-model="inputDirName"></input>
             <button @click="createDir">create</button>
-            <button>cancel</button>
+            <button @click="showCreateDir = false">cancel</button>
           </div>
-          <li class='privateFolderName' v-for="folder in folderlist"
+          <li class='privateFolderName' v-for="(folder, index) in folderlist"
             :class="{ focusFolder: IsFocus('folder', folder.directory), showfolder: FolderNow === folder.directory }">
-            <a @click.prevent="clickFolder(folder.directory)">{{ folder.directory }}</a>
+            <a @click.prevent="clickFolder(folder.directory, index)">{{ folder.directory }}</a>
           </li>
         </ul>
       </div>
       <div id="privateNote">
         <ul id="privateNoteList" v-if="notelist">
           <span>{{ FolderNow }}</span>
-          <li class='privateNoteName' v-for="note in notelist" :class="{ focusFolder: IsFocus('note', note) }">
+          <li class='privateNoteName' v-for="(note, index) in notelist" :class="{ focusFolder: IsFocus('note', note) }">
             <a @click.prevent="clickNote(note)">{{ note }}</a>
+            <div v-if="ordering">
+              <span @click="moveup(index)" v-show="index !== 0">↑</span>
+              <span @click="movedown(index)" v-show="index !== notelist.length - 1">↓</span>
+            </div>
+
           </li>
           <div id="crateFile" v-if="showCreateFile">
             <input v-model="inputFileName"></input>
             <button @click="createNote">create</button>
-            <button>cancel</button>
+            <button @click="showCreateFile = false">cancel</button>
           </div>
           <li class="addNote">
-            <a @click.prevent="showCreateFile = true">新增文件</a>
+            <a @click.prevent="showCreateFile = true">新增+</a>
           </li>
+          <div v-show="!ordering">
+            <button @click="ordering = true"></button>
+          </div>
         </ul>
+      </div>
+      <div id="rightbuttonlist">
+        <button id="changeorder" @click="ordering = true" v-show="!ordering">調整順序</button>
+        <button id="changeorder" @click="confirmOrder()" v-show="ordering">確認更改</button>
       </div>
     </div>
     <div id="privateFile" v-if="TheNote" :class="{ notshowNote: notShowNote }">
@@ -242,6 +278,9 @@ const inputDirName = ref("");
 </template>
 
 <style scoped>
+#privateNoteList {}
+
+
 #crateFile button {
   margin-left: 5px;
 }
@@ -262,8 +301,7 @@ a:hover {
 
 ul {
   padding-left: 0px;
-  position: fixed;
-  top: 10%;
+  padding-top: 60%;
 }
 
 ul span {
@@ -273,19 +311,15 @@ ul span {
 }
 
 .addNote a {
-  background-color: var(--primary-color);
   padding-right: 10px;
   padding-left: 5px;
   padding-bottom: 5px;
-  padding-top: 5px;
   border-radius: 5px;
-  color: black;
   font-weight: bold;
+  color: white;
 }
 
-.addNote {
-  margin-top: 15px;
-}
+.addNote {}
 
 #privateArea {
   display: flex;
@@ -340,5 +374,24 @@ ul span {
 .focusFolder {
   border: 1px solid white;
   border-radius: 4px;
+}
+
+.privateNoteName {
+  display: flex;
+  gap: 5px;
+}
+
+#changeorder {
+  font-size: 16px;
+  color: white;
+  border-radius: 4px;
+  padding: 5px;
+  border: 1px white solid;
+}
+
+#rightbuttonlist {
+  position: absolute;
+  bottom: 10%;
+  right: 0%;
 }
 </style>

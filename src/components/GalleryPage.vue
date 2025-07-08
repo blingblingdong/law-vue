@@ -64,12 +64,19 @@
 #breadsheet {
   padding: 5px 10px;
   position: sticky;
-  top: 10%;
+  top: 0%;
+  background-color: black;
 }
 
 #breadsheet a {
   font-size: 1.2rem;
 }
+
+#breadsheet a:hover {
+  color: darkorange;
+  cursor: pointer;
+}
+
 
 
 
@@ -238,7 +245,7 @@ const ToFolder = async function (folder: Folder) {
   folderName.value = folder.directory;
   folderDescription.value = folder.description;
   folderWriter.value = folder.user_name;
-  FolderNoteList.value = await get_note_list(ApiLink, folderWriter.value, folderName.value);
+  FolderNoteList.value = folder.note_order
 }
 
 const ToFile = async function (note: Note) {

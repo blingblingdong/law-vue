@@ -500,7 +500,7 @@ a {
 }
 
 #publicFileName {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin: 10px 0px;
   font-weight: 900;
   display: flex;

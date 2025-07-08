@@ -144,6 +144,17 @@ export const useUiStore = defineStore('ui', {
       }
     },
 
+    goToFolder(folder_id: string) {
+      this.currentPage = "查詢"
+      const [username, foldername] = folder_id.split('-');
+      this.searchItem = {
+        id: folder_id,
+        name: foldername,
+        sourcetype: "folder"
+      }
+    },
+
+
     goToOldInter(num: string) {
       this.currentPage = "查詢"
       this.searchItem = {

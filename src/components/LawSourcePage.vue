@@ -8,7 +8,9 @@ import OldinterpretationBlock from './SourceCon/OldinterpretationBlock.vue'
 import ResolutionBlock from './SourceCon/ResolutionBlock.vue'
 import PrecedentBlock from './SourceCon/PrecedentBlock.vue'
 import LawPage from './LawPage.vue'
+import Folder from './Folder.vue'
 import { get_note, get_note_nav } from '../types/Note.ts'
+import { get_folder } from '../types/Folder.ts'
 import FilePage from './FilePage.vue'
 import swal from 'sweetalert'
 
@@ -81,7 +83,14 @@ async function finditem(pushingitem: othersourceitem): Promise<WorkingItem | nul
     } else {
       return null
     }
-  } else {
+  } else if (buffer.item.sourcetype === 'folder') {
+    const [username, foldername] = buffer.item.id.split("-");
+    const folder = await get_folder(ApiLink, username, foldername);
+    if (folder) {
+      buffer.data = { TheDirectory: folder }
+    }
+  }
+  else {
     const res = await fetch(`${ApiLink}/${buffer.item.sourcetype}/${buffer.item.id}`);
     if (!res.ok) {
       return null
@@ -175,6 +184,7 @@ let style_vec: OtherLawSourceStyle[] = [
   { sourcetype: "lawname", color: "darkgreen", name: "法條", con: LawPage },
   { sourcetype: "all", color: "purple", name: "全域!", con: LawPage },
   { sourcetype: "note", color: "darkgreen", name: "筆記", con: FilePage },
+  { sourcetype: "folder", color: "darkgreen", name: "資料夾", con: Folder },
 ];
 
 

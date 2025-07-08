@@ -18,6 +18,7 @@ const enterli4 = ref('');
 
 </script>
 
+
 <template>
   <div>Chapter</div>
   <ul v-if="ullist" v-for="ul in ullist" class="lawChapter1" @mouseenter="enterul = ul.chapter"
@@ -42,7 +43,14 @@ const enterli4 = ref('');
   </ul>
 </template>
 
+
 <style scoped>
+.lawChapter1 {
+  overflow-y: scroll;
+}
+
+
+
 a {
   color: var(--text-color);
   text-decoration: none;
@@ -59,5 +67,22 @@ ul {
   padding-left: 5px;
   margin: 0px;
   padding-top: 10px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
