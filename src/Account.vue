@@ -17,6 +17,11 @@ const loginmail = ref('');
 const loginpassword = ref('');
 const signupmail = ref('');
 const signuppassword = ref('');
+const signupname = ref('');
+
+import { getApiUrl } from './utils/api'
+const ApiLink = getApiUrl();
+
 
 
 const login = async () => {
@@ -24,7 +29,25 @@ const login = async () => {
 }
 
 const signup = async () => {
+  if (!signupmail.value || !signupmail.value.includes('@')) {
+    swal("請輸入有效的信箱");
+    return;
+  }
 
+
+  let newAccount = { user_name: signupname.value, email: signupmail.value, password: signuppassword.value };
+  let res = await fetch(`${ApiLink}/registration`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newAccount),
+  });
+  if (res.ok) {
+    swal("註冊成功")
+  } else {
+    swal("註冊失敗")
+  }
 }
 
 const signout = () => {
@@ -32,7 +55,6 @@ const signout = () => {
   localStorage.removeItem("username");
   localStorage.removeItem("email");
 }
-
 
 </script>
 
@@ -63,17 +85,17 @@ const signout = () => {
       <p>Sign Up!</p>
       <div class="input-row">
         <span>name</span>
-        <input v-model="signuppassword"></input>
+        <input v-model="signupname"></input>
       </div>
       <div class="input-row">
         <span>email</span>
-        <input v-model="signupmail"></input>
+        <input v-model="signupmail" type="email"></input>
       </div>
       <div class="input-row">
         <span>password</span>
         <input v-model="signuppassword"></input>
       </div>
-      <p @click="login">signup</p>
+      <p @click="signup">signup</p>
       <a @click="loginOrSignup = 'login'">Already Have Account? Login!</a>
     </div>
   </div>

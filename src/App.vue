@@ -12,7 +12,7 @@ import { useUiStore, useAccountStore } from './store/page.ts'
 import { nextTick } from 'vue'
 const ui = useUiStore();
 import { getApiUrl } from './utils/api'
-import { Library as LibraryIcon, NotebookPen as NotebookIcon, BookText as BookTextIcon, Folder as FolderIcon } from 'lucide-vue-next';
+import { Library as LibraryIcon, NotebookPen as NotebookIcon, BookText as BookTextIcon, Folder as FolderIcon, Share as ShareIcon } from 'lucide-vue-next';
 const ApiLink = getApiUrl();
 import swal from 'sweetalert'
 
@@ -83,6 +83,8 @@ if (lawname) {
 
 if (userid && directory && file_name) {
   ui.goToFile(`${userid}-${directory}-${file_name}`)
+} else if (userid && directory) {
+  ui.goToFolder(`${userid}-${directory}`)
 }
 
 if (oldinter) {
@@ -154,10 +156,6 @@ const clickLibarary = () => {
           <div class="searchicon">
             <NotebookIcon @click="clickfolder()" :style="{ color: activecolor('資料夾') }" />
             <span style="font-size:15px">note</span>
-          </div>
-          <div class="searchicon">
-            <LibraryIcon :size="24" @click="ui.currentPage = '畫廊'" :style="{ color: activecolor('畫廊') }" />
-            <span>gallery</span>
           </div>
           <div class="searchicon">
             <FolderIcon @click="clickLibarary()" :style="{ color: activecolor('圖書館') }" />

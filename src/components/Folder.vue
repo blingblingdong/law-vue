@@ -12,7 +12,7 @@ const props = defineProps<{
 }>();
 
 const sharefolder = () => {
-  const url = `https://rustlawweb.netlify.app/?user=${props.TheDirectory?.user_name}&dir=${props.TheDirectory?.directory}`
+  const url = `https://vuelawweb.netlify.app/?user=${props.TheDirectory?.user_name}&dir=${props.TheDirectory?.directory}`
   navigator.share({
     url: url,
   })
@@ -22,6 +22,8 @@ const clickFile = async (notename: string) => {
   let id = props.TheDirectory?.id + "-" + notename;
   ui.goToFile(id);
 }
+
+import { Share as ShareIcon } from 'lucide-vue-next';
 
 </script>
 
@@ -33,8 +35,7 @@ const clickFile = async (notename: string) => {
       <div id="in-public-folder-name">{{ TheDirectory.directory }}</div>
       <div id='public-folder-first-header-second-bar'>
         <div class='button-list'>
-          <div @click="sharefolder">離開</div>
-          <div id='share-public-folder'>分享</div>
+          <ShareIcon @click="sharefolder" width="18px" class="sharebutton" />
         </div>
       </div>
     </div>

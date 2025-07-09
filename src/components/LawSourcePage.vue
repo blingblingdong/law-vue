@@ -256,19 +256,13 @@ interface othersourceitem {
 
 async function getlawsourcelist(type: string): Promise<othersourceitem[]> {
 
-  if (type === 'note') {
-    const res = await fetch(`${ApiLink}/${type}list/test_user`);
+  try {
+    const res = await fetch(`${ApiLink}/${type}list`);
     const listdata = await res.json() as othersourceitem[];
     return listdata
-  } else {
-    try {
-      const res = await fetch(`${ApiLink}/${type}list`);
-      const listdata = await res.json() as othersourceitem[];
-      return listdata
-    } catch (e) {
-      console.error("載入資料失敗:", e);
-      return []
-    }
+  } catch (e) {
+    console.error("載入資料失敗:", e);
+    return []
   }
 
 };
@@ -389,7 +383,7 @@ const showlist = ref(false);
             <div :sourcetype="item.sourcetype" :id="item.id" @click=" clickitem(item)" class="item">
               <div class="sourcetag">
                 <p :style="{ 'background-color': get_style(item.sourcetype).color }">{{ get_style(item.sourcetype).name
-                  }}
+                }}
                 </p>
               </div>
               <div class="itemname">{{ item.name }}</div>
@@ -403,7 +397,7 @@ const showlist = ref(false);
             <div :sourcetype="item.sourcetype" :id="item.id" @click=" clickitem(item)" class="item">
               <div class="sourcetag">
                 <p :style="{ 'background-color': get_style(item.sourcetype).color }">{{ get_style(item.sourcetype).name
-                  }}
+                }}
                 </p>
               </div>
               <div class="itemname">{{ item.name }}</div>

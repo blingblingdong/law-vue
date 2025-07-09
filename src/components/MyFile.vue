@@ -4,7 +4,7 @@ import FilePage from './FilePage.vue'
 import type { Folder } from '../types/Folder.ts'
 import type { H2Nav, Note } from '../types/Note.ts'
 import { get_every_note, get_note_list, get_note, get_note_nav, create_note, create_dir } from '../types/Note'
-import { get_every_folders, get_folder, update_note_order, get_note_order } from '../types/Folder'
+import { get_every_folders, get_folder, update_note_order, get_note_order, delete_folder } from '../types/Folder'
 const folderlist = ref<null | Folder[]>(null);
 import swal from 'sweetalert'
 const ordering = ref(false);
@@ -18,7 +18,6 @@ const notelist = ref<null | string[]>(null);
 const input = ref('');
 const TheNote = ref<null | Note>(null)
 const TheNav = ref<null | H2Nav[]>(null)
-const user = ref<string>("test_user");
 const FolderNow = ref<string>("")
 const inputFileName = ref<string>('')
 const showCreateFile = ref<boolean>(false);
@@ -161,7 +160,7 @@ onMounted(async () => {
 )
 
 const clickFolder = async (folder_name: string, index?: number) => {
-  notelist.value = await get_note_order(ApiLink, user.value, folder_name);
+  notelist.value = await get_note_order(ApiLink, account.username as string, folder_name);
   FolderNow.value = folder_name;
   if (index) {
     focuson.value.position = index;
@@ -169,18 +168,18 @@ const clickFolder = async (folder_name: string, index?: number) => {
 }
 
 const clickNote = async (notename: string) => {
-  TheNote.value = await get_note(ApiLink, user.value, FolderNow.value, notename);
-  TheNav.value = await get_note_nav(ApiLink, `${user.value}-${FolderNow.value}-${notename}`);
+  TheNote.value = await get_note(ApiLink, account.username as string, FolderNow.value, notename);
+  TheNav.value = await get_note_nav(ApiLink, `${account.username as string}-${FolderNow.value}-${notename}`);
   notShowNote.value = false;
   showsidebar.value = false;
 }
 
 const createNote = async () => {
-  let id = user.value + "-" + FolderNow.value + "-" + inputFileName.value;
-  let note: Note = { id: id, user_name: user.value, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value, public: true };
+  let id = account.username as string + "-" + FolderNow.value + "-" + inputFileName.value;
+  let note: Note = { id: id, user_name: account.username as string, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value, public: true };
   await create_note(ApiLink, note);
   await nextTick();
-  notelist.value = await get_note_order(ApiLink, user.value, FolderNow.value);
+  notelist.value = await get_note_order(ApiLink, account.username as string, FolderNow.value);
   showCreateFile.value = false;
 }
 
@@ -215,6 +214,25 @@ const movedown = (index: number) => {
     notelist.value[index + 1] = notelist.value[index];
     notelist.value[index] = tmp;
   }
+}
+
+const delete_the_folder = async () => {
+  const willDelete = await swal({
+    title: "確定要刪除資料夾?",
+    text: "資料夾裡的文件會被ㄧ起刪除！",
+    icon: "warning",
+    dangerMode: true,
+  });
+
+  if (willDelete) {
+    let res = await delete_folder(ApiLink, account.username as string, FolderNow.value);
+    if (res) {
+      swal("Deleted!", `${FolderNow} has been deleted!`, "success");
+    } else {
+      swal("Oops!", "Seems like we couldn't fetch the info", "error");
+    }
+  }
+
 }
 
 
@@ -266,9 +284,10 @@ const movedown = (index: number) => {
           </div>
         </ul>
       </div>
-      <div id="rightbuttonlist">
+      <div id="rightbuttonlist" v-show="FolderNow !== ''">
         <button id="changeorder" @click="ordering = true" v-show="!ordering">調整順序</button>
         <button id="changeorder" @click="confirmOrder()" v-show="ordering">確認更改</button>
+        <button id="deleteFolder" @click="delete_the_folder">刪除資料夾</button>
       </div>
     </div>
     <div id="privateFile" v-if="TheNote" :class="{ notshowNote: notShowNote }">
@@ -381,7 +400,7 @@ ul span {
   gap: 5px;
 }
 
-#changeorder {
+#rightbuttonlist button {
   font-size: 16px;
   color: white;
   border-radius: 4px;
@@ -393,5 +412,8 @@ ul span {
   position: absolute;
   bottom: 10%;
   right: 0%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 </style>

@@ -358,3 +358,8 @@ i:hover {
   top: 30%;
   font-size: 25px;
 }
+
+.sharebutton:hover {
+  color: var(--primary-color);
+  cursor: pointer;
+}

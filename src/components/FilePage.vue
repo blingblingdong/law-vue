@@ -205,7 +205,7 @@ const getComponent = (type: string) => {
 }
 
 const sharefile = () => {
-  const url = `https://rustlawweb.netlify.app/?user=${props.theNote.user_name}&dir=${props.theNote.directory}&file_name=${props.theNote.file_name}`
+  const url = `https://vuelawweb.netlify.app/?user=${props.theNote.user_name}&dir=${props.theNote.directory}&file_name=${props.theNote.file_name}`
   navigator.share({
     url: url,
   })

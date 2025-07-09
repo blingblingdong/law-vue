@@ -71,6 +71,18 @@ export async function get_note_order(ApiLink: string, writer: string, folderName
   return list
 }
 
+export async function delete_folder(ApiLink: string, username: string, foldername: string): Promise<boolean> {
+  let res = await fetch(`${ApiLink}/folder/${username}/${foldername}`, {
+    method: 'DELETE',
+  });
+  if (res.ok) {
+    return true
+  }
+  return false
+}
+
+
+
 export async function update_note_order(ApiLink: string, userName: string, folderName: string, list: string[]): Promise<boolean> {
   try {
     let res = await fetch(`${ApiLink}/note_order/${userName}/${folderName}`, {

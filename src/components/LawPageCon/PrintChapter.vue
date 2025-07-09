@@ -14,6 +14,13 @@ const enterli = ref('');
 const enterli2 = ref('');
 const enterli3 = ref('');
 const enterli4 = ref('');
+const clickNav = (id: string) => {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
 
 
 </script>
@@ -21,21 +28,20 @@ const enterli4 = ref('');
 
 <template>
   <div>Chapter</div>
-  <ul v-if="ullist" v-for="ul in ullist" class="lawChapter1" @mouseenter="enterul = ul.chapter"
-    @mouseleave="enterul = ''">
-    <a :href="'#' + ul.chapter">{{ ul.chapter }}</a>
-    <li v-if="ul.childChapters" v-for="li in ul.childChapters" class="lawChapter2" @mouseenter="enterli = li.chapter"
-      @mouseleave="enterli = ''" v-show="enterul === ul.chapter">
-      <a :href="'#' + li.chapter">{{ li.chapter }}</a>
-    <li v-if="li.childChapters" v-for="li2 in li.childChapters" class="lawChapter3" @mouseenter="enterli2 = li2.chapter"
-      @mouseleave="enterli2 = ''" v-show="enterli === li.chapter">
-      <a :href="'#' + li2.chapter">{{ li2.chapter }}</a>
-    <li v-if="li2.childChapters" v-for="li3 in li2.childChapters" class="lawChapter4"
-      @mouseenter="enterli3 = li3.chapter" @mouseleave="enterli3 = ''" v-show="enterli2 === li2.chapter">
-      <a :href="'#' + li3.chapter">{{ li3.chapter }}</a>
-    <li v-if="li3.childChapters" v-for="li4 in li3.childChapters" class="lawChapter5"
-      @mouseenter="enterli4 = li4.chapter" @mouseleave="enterli4 = ''" v-show="enterli3 === li3.chapter">
-      <a :href="'#' + li4.chapter">{{ li4.chapter }}</a>
+  <ul v-if="ullist" v-for="ul in ullist" class="lawChapter1" @click="enterul = ul.chapter">
+    <a @click.prevent="clickNav(ul.chapter)" :class="{ colornav: ul.chapter === enterul }">{{ ul.chapter }}</a>
+    <li v-if="ul.childChapters" v-for="li in ul.childChapters" class="lawChapter2" @click="enterli = li.chapter"
+      v-show="enterul === ul.chapter">
+      <a @click.prevent="clickNav(li.chapter)" :class="{ colornav: li.chapter === enterli }">{{ li.chapter }}</a>
+    <li v-if="li.childChapters" v-for="li2 in li.childChapters" class="lawChapter3" @click="enterli2 = li2.chapter"
+      v-show="enterli === li.chapter">
+      <a @click="clickNav(li2.chapter)" :class="{ colornav: li2.chapter === enterli2 }">{{ li2.chapter }}</a>
+    <li v-if="li2.childChapters" v-for="li3 in li2.childChapters" class="lawChapter4" @click="enterli3 = li3.chapter"
+      v-show="enterli2 === li2.chapter">
+      <a @click.prevent="clickNav(li3.chapter)" :class="{ colornav: li3.chapter === enterli3 }">{{ li3.chapter }}</a>
+    <li v-if="li3.childChapters" v-for="li4 in li3.childChapters" class="lawChapter5" @click="enterli4 = li4.chapter"
+      v-show="enterli3 === li3.chapter">
+      <a @click.prevent="clickNav(li4.chapter)" :class="{ colornav: li4.chapter === enterli4 }">{{ li4.chapter }}</a>
     </li>
     </li>
     </li>
@@ -54,6 +60,11 @@ const enterli4 = ref('');
 a {
   color: var(--text-color);
   text-decoration: none;
+}
+
+a:hover {
+  cursor: pointer;
+  color: var(--primary-color);
 }
 
 li {
@@ -84,5 +95,9 @@ ul {
 .fade-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+
+.colornav {
+  color: var(--primary-color);
 }
 </style>
