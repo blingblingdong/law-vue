@@ -42,6 +42,7 @@ const lawlines = function (lines: Line[]) {
 
 <template v-if="LawList">
   <div id="searchTextArea">
+    <p style="align-self:center;">輸入字詞</p>
     <input v-model="text" id="searchTextInput"></input>
     <div v-for="LawListObj in LawLists" id="lawlist">
       <div class="law-card" v-for="law in LawListObj.laws" :id="law.chapter[0] + law.num"

@@ -24,6 +24,7 @@ watch(
 
 <template v-if="LawList">
   <div id="searchTextArea">
+    <p style="align-self:center;">輸入條號</p>
     <input v-model="num" id="searchTextInput"></input>
     <div class="law-card" v-if="thelaw">
       <div class="law-card-title">
