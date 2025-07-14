@@ -102,6 +102,26 @@ export async function update_note_order(ApiLink: string, userName: string, folde
   return false;
 }
 
+export async function update_dir_information(ApiLink: string, folder: Folder): Promise<Folder | null> {
+  try {
+    let res = await fetch(`${ApiLink}/dir`, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(folder),
+    });
+    if (res.ok) {
+      let j = await res.json();
+      return j as Folder;
+    }
+  } catch (error) {
+    console.error('筆記更新失敗:', error);
+    return null
+  }
+  return null;
+}
+
 
 
 

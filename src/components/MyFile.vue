@@ -1,28 +1,36 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
 import FilePage from './FilePage.vue'
+import FolderPage from './Folder.vue';
 import type { Folder } from '../types/Folder.ts'
 import type { H2Nav, Note } from '../types/Note.ts'
 import { get_every_note, get_note_list, get_note, get_note_nav, create_note, create_dir } from '../types/Note'
-import { get_every_folders, get_folder, update_note_order, get_note_order, delete_folder } from '../types/Folder'
+import { get_every_folders, get_folder, update_note_order, get_note_order, delete_folder, update_dir_information } from '../types/Folder'
 const folderlist = ref<null | Folder[]>(null);
 import swal from 'sweetalert'
 const ordering = ref(false);
 
 
+
 import { getApiUrl } from '../utils/api'
 import { useAccountStore } from '../store/page'
 
+const FolderNow = ref<null | Folder>(null);
 const ApiLink = getApiUrl();
 const notelist = ref<null | string[]>(null);
 const input = ref('');
 const TheNote = ref<null | Note>(null)
 const TheNav = ref<null | H2Nav[]>(null)
-const FolderNow = ref<string>("")
 const inputFileName = ref<string>('')
 const showCreateFile = ref<boolean>(false);
 const showsidebar = ref<boolean>(true);
 const notShowNote = ref(true);
+const showFolder = ref(false);
+import { Pen as PenIcon } from 'lucide-vue-next';
+const showWriteDes = ref(false);
+
+
+
 
 interface FocusOn {
   type: string,
@@ -52,7 +60,7 @@ const IsFocus = (type: string, name: string) => {
 
 const confirmOrder = async () => {
   if (notelist && account.username) {
-    let result = await update_note_order(ApiLink, account.username as string, FolderNow.value, notelist.value as string[]);
+    let result = await update_note_order(ApiLink, account.username as string, FolderNow.value?.directory as string, notelist.value as string[]);
     if (result) {
       swal("創建成功")
     } else {
@@ -89,7 +97,7 @@ document.addEventListener('keydown', async function (event) {
 
 
     if (event.key === 'Enter') {
-      await clickFolder(folderlist.value[focuson.value.position].directory)
+      await clickFolder(folderlist.value[focuson.value.position].directory, focuson.value.position)
       await nextTick();
     }
 
@@ -159,27 +167,28 @@ onMounted(async () => {
 }
 )
 
-const clickFolder = async (folder_name: string, index?: number) => {
+const clickFolder = async (folder_name: string, index: number) => {
   notelist.value = await get_note_order(ApiLink, account.username as string, folder_name);
-  FolderNow.value = folder_name;
-  if (index) {
+  if (folderlist.value) {
     focuson.value.position = index;
+    const folder = folderlist.value[index];
+    FolderNow.value = folder;
   }
 }
 
 const clickNote = async (notename: string) => {
-  TheNote.value = await get_note(ApiLink, account.username as string, FolderNow.value, notename);
-  TheNav.value = await get_note_nav(ApiLink, `${account.username as string}-${FolderNow.value}-${notename}`);
+  TheNote.value = await get_note(ApiLink, account.username as string, FolderNow.value?.directory as string, notename);
+  TheNav.value = await get_note_nav(ApiLink, `${account.username as string}-${FolderNow.value?.directory}-${notename}`);
   notShowNote.value = false;
   showsidebar.value = false;
 }
 
 const createNote = async () => {
-  let id = account.username as string + "-" + FolderNow.value + "-" + inputFileName.value;
-  let note: Note = { id: id, user_name: account.username as string, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value, public: true };
+  let id = account.username as string + "-" + FolderNow.value?.directory + "-" + inputFileName.value;
+  let note: Note = { id: id, user_name: account.username as string, footer: null, content: null, file_name: inputFileName.value, directory: FolderNow.value?.directory as string, public: true };
   await create_note(ApiLink, note);
   await nextTick();
-  notelist.value = await get_note_order(ApiLink, account.username as string, FolderNow.value);
+  notelist.value = await get_note_order(ApiLink, account.username as string, FolderNow.value?.directory as string);
   showCreateFile.value = false;
 }
 
@@ -225,7 +234,7 @@ const delete_the_folder = async () => {
   });
 
   if (willDelete) {
-    let res = await delete_folder(ApiLink, account.username as string, FolderNow.value);
+    let res = await delete_folder(ApiLink, account.username as string, FolderNow.value?.directory as string);
     if (res) {
       swal("Deleted!", `${FolderNow} has been deleted!`, "success");
     } else {
@@ -235,7 +244,40 @@ const delete_the_folder = async () => {
 
 }
 
+const clickDi = () => {
+  notShowNote.value = true;
+  showsidebar.value = false;
+  showFolder.value = true;
+  TheNote.value = null;
+}
 
+const sharefolder = (TheDirectory: Folder) => {
+  const url = `https://vuelawweb.netlify.app/?user=${TheDirectory.user_name}&dir=${TheDirectory?.directory}`
+  navigator.share({
+    url: url,
+  })
+}
+
+const descriptionPlace = ref("");
+
+const savedes = async () => {
+  if (FolderNow.value == null) { return }
+  FolderNow.value.description = descriptionPlace.value;
+  let res = await update_dir_information(ApiLink, FolderNow.value as Folder);
+  if (res) {
+    folderlist.value?.forEach(f => {
+      if (f.id === FolderNow.value?.directory) {
+        f = FolderNow.value
+      }
+    })
+  }
+  showWriteDes.value = false;
+}
+
+const WriteDes = () => {
+  descriptionPlace.value = FolderNow.value?.description as string;
+  showWriteDes.value = true;
+}
 </script>
 
 
@@ -255,14 +297,15 @@ const delete_the_folder = async () => {
             <button @click="showCreateDir = false">cancel</button>
           </div>
           <li class='privateFolderName' v-for="(folder, index) in folderlist"
-            :class="{ focusFolder: IsFocus('folder', folder.directory), showfolder: FolderNow === folder.directory }">
+            :class="{ focusFolder: IsFocus('folder', folder.directory), showfolder: FolderNow === folder }">
             <a @click.prevent="clickFolder(folder.directory, index)">{{ folder.directory }}</a>
           </li>
         </ul>
       </div>
       <div id="privateNote">
         <ul id="privateNoteList" v-if="notelist">
-          <span>{{ FolderNow }}</span>
+          <span>{{ FolderNow?.directory }}</span>
+          <li @click="clickDi">目錄頁</li>
           <li class='privateNoteName' v-for="(note, index) in notelist" :class="{ focusFolder: IsFocus('note', note) }">
             <a @click.prevent="clickNote(note)">{{ note }}</a>
             <div v-if="ordering">
@@ -284,7 +327,7 @@ const delete_the_folder = async () => {
           </div>
         </ul>
       </div>
-      <div id="rightbuttonlist" v-show="FolderNow !== ''">
+      <div id="rightbuttonlist" v-show="FolderNow !== null">
         <button id="changeorder" @click="ordering = true" v-show="!ordering">調整順序</button>
         <button id="changeorder" @click="confirmOrder()" v-show="ordering">確認更改</button>
         <button id="deleteFolder" @click="delete_the_folder">刪除資料夾</button>
@@ -293,11 +336,144 @@ const delete_the_folder = async () => {
     <div id="privateFile" v-if="TheNote" :class="{ notshowNote: notShowNote }">
       <FilePage :theNote="TheNote" :theNoteNav="TheNav" v-if="TheNote" />
     </div>
+    <div id="privateFolderPage" v-else-if="FolderNow && showFolder">
+      <div id='public-file-first-header'>
+        <div id="in-public-folder-name">{{ FolderNow.directory }}</div>
+        <div id='public-folder-first-header-second-bar'>
+          <div class='button-list'>
+            <ShareIcon @click="sharefolder(FolderNow)" width="18px" class="sharebutton" />
+          </div>
+        </div>
+      </div>
+      <div id="in-public-folder-writer">{{ FolderNow.user_name }}</div>
+      <div class="description">作品簡介</div>
+      <div id="public-file-word-area-first-description" v-if="!showWriteDes">
+        <pre>{{ FolderNow.description }}</pre>
+        <br>
+        <PenIcon width="16px" @click="WriteDes" />
+      </div>
+      <div id="write-description" v-if="showWriteDes">
+        <textarea v-model="descriptionPlace" />
+        <button @click="savedes">save</button>
+      </div>
+      <div class='catlog'>目錄</div>
+      <div id="public-file-word-area-first-file-list">
+        <ul id="public-file-list-ul">
+          <li v-for="foldernotename in FolderNow.note_order">
+            <a @click="clickNote(foldernotename)">{{ foldernotename }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-#privateNoteList {}
+#privateFolderPage {
+  width: 100%;
+  margin: 5%;
+}
+
+textarea {
+  margin: 10px;
+  width: 100%;
+  height: 500px;
+}
+
+
+
+#public-file-list-ul li {
+  padding: 5px 5px;
+}
+
+
+
+.catlog,
+.description {
+  font-size: 1.1rem;
+  font-weight: 500;
+  /* 正確的 font-weight 應該是沒有單位的 */
+  line-height: 3rem;
+}
+
+#public-file-list-ul,
+#private-file-list-ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-left: 0px;
+  padding-left: 0px;
+}
+
+#folder-information-description {
+  margin-left: 5%;
+}
+
+#public-folder-file-word-area {
+  width: 100%;
+}
+
+#in-public-folder-name,
+#folder-information-title {
+  font-weight: 1000;
+  font-size: 1.3rem;
+  color: var(--primary-color);
+}
+
+
+#in-public-folder-writer {
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+#public-file-word-area-first {
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+#public-file-first-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.button-list {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+#folder-information-flex {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+#public-file-word-area-first-description {
+  margin-left: 5%;
+}
+
+.catlog:after,
+.description:after {
+  display: block;
+  content: "";
+  right: 0;
+  width: 80%;
+  height: 0.5px;
+  background-color: var(--text-color);
+  /* 設置底線顏色 */
+}
+
+
+#privateNoteList {
+  padding-top: 40px;
+}
+
+#privateFolderList {
+  padding-top: 60px;
+}
 
 
 #crateFile button {
@@ -320,7 +496,6 @@ a:hover {
 
 ul {
   padding-left: 0px;
-  padding-top: 60%;
 }
 
 ul span {
@@ -409,11 +584,12 @@ ul span {
 }
 
 #rightbuttonlist {
-  position: absolute;
-  bottom: 10%;
+  position: fixed;
+  bottom: 0%;
   right: 0%;
   display: flex;
+  gap: 10px;
   flex-direction: column;
-  gap: 5px;
+
 }
 </style>

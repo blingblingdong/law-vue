@@ -11,10 +11,11 @@
     </span>
   </template>
   <template v-else-if="inlineNode.type === 'strong'">
-    <strong :class="inlineNode.attributes?.class" :style="inlineNode.attributes?.style">{{ inlineNode.text?.trim()
-      }}<template v-if="inlineNode.children" v-for="(nested, idx) in inlineNode.children" :key="idx">
+    <strong :class="inlineNode.attributes?.class" :style="inlineNode.attributes?.style">{{ inlineNode.text?.trim() }}
+      <template v-if="inlineNode.children" v-for="(nested, idx) in inlineNode.children" :key="idx">
         <InlineNodeTemplate :inline-node="nested" />
-      </template></strong>
+      </template>
+    </strong>
   </template>
   <template v-else-if="inlineNode.type === 'p'">
     <p :class="inlineNode.attributes?.class" :style="inlineNode.attributes?.style">
